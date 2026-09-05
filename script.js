@@ -99,11 +99,6 @@ const bookingMeta = document.querySelector("#bookingMeta");
 const bookingMapUrl = document.querySelector("#bookingMapUrl");
 const bookingSiteUrl = document.querySelector("#bookingSiteUrl");
 const saveBookingButton = document.querySelector("#saveBookingButton");
-const packingAddButton = document.querySelector("#packingAddButton");
-const packingAddForm = document.querySelector("#packingAddForm");
-const packingAddGroup = document.querySelector("#packingAddGroup");
-const packingAddInput = document.querySelector("#packingAddInput");
-const packingAddCancel = document.querySelector("#packingAddCancel");
 let selectedDay = 0;
 let checklistItemsState = [];
 let checklistGroupNames = [];
@@ -544,20 +539,17 @@ function checklistGroupsForRender() {
   return [...groups.entries()];
 }
 
-function renderPackingAddGroups() {
-  packingAddGroup.innerHTML = checklistGroupNames.map((group, index) => `<option value="${index}">${escapeHtml(group)}</option>`).join("");
-  packingAddButton.disabled = checklistGroupNames.length === 0;
-}
-
 function renderChecklist() {
   const checklist = document.querySelector("#checklist");
   const groups = checklistGroupsForRender();
   checklistGroupNames = groups.map(([group]) => group);
-  renderPackingAddGroups();
   checklist.innerHTML = groups.map(([group, items], groupIndex) => {
     const rows = items.map((item) => `<div class="check-item-shell" data-check-shell="${escapeHtml(item.id)}">
       <button class="check-delete" type="button" data-check-delete="${escapeHtml(item.id)}" aria-label="刪除${escapeHtml(item.label)}">刪除</button>
-      <label class="check-item"><input type="checkbox" data-check="${escapeHtml(item.id)}" ${item.isCompleted ? "checked" : ""} /><span class="check-box">${icons.check}</span><span class="check-label">${escapeHtml(item.label)}</span></label>
+      <div class="check-item${item.isCompleted ? " is-completed" : ""}">
+        <label class="check-toggle" aria-label="完成${escapeHtml(item.label)}"><input type="checkbox" data-check="${escapeHtml(item.id)}" ${item.isCompleted ? "checked" : ""} /><span class="check-box">${icons.check}</span></label>
+        <button class="check-label" type="button" data-check-edit="${escapeHtml(item.id)}" title="點擊編輯">${escapeHtml(item.label)}</button>
+      </div>
     </div>`).join("");
     return `<div class="check-group">${escapeHtml(group)}</div>${rows}
       <div class="check-add-row" data-check-add-row="${groupIndex}">
@@ -668,30 +660,72 @@ async function deleteChecklistItem(button) {
   showToast("已刪除準備項目");
 }
 
+function restoreChecklistLabelEditor(input, label) {
+  const button = document.createElement("button");
+  button.className = "check-label";
+  button.type = "button";
+  button.dataset.checkEdit = input.dataset.checkEditInput;
+  button.title = "點擊編輯";
+  button.textContent = label;
+  input.replaceWith(button);
+}
+
+function startChecklistLabelEdit(button) {
+  closeSwipedChecklistItems();
+  const shell = button.closest(".check-item-shell");
+  const item = checklistItemsState.find((entry) => entry.id === button.dataset.checkEdit);
+  if (!shell || !item || shell.querySelector(".check-edit-input")) return;
+  const input = document.createElement("input");
+  input.className = "check-edit-input";
+  input.type = "text";
+  input.maxLength = 80;
+  input.value = item.label;
+  input.dataset.checkEditInput = item.id;
+  input.setAttribute("aria-label", `編輯${item.label}`);
+  button.replaceWith(input);
+  input.focus();
+  input.select();
+}
+
+async function saveChecklistLabel(input) {
+  if (input.dataset.saving === "true") return;
+  const item = checklistItemsState.find((entry) => entry.id === input.dataset.checkEditInput);
+  if (!item) return;
+  const label = input.value.trim();
+  if (!label) {
+    showToast("準備項目不能為空");
+    input.value = item.label;
+    input.focus();
+    return;
+  }
+  if (label === item.label) {
+    restoreChecklistLabelEditor(input, item.label);
+    return;
+  }
+  if (!supabaseClient) {
+    showToast("資料庫尚未連線");
+    restoreChecklistLabelEditor(input, item.label);
+    return;
+  }
+  input.dataset.saving = "true";
+  input.disabled = true;
+  const { data, error } = await supabaseClient.from("checklist_items").update({ label }).eq("id", item.id).select().single();
+  if (error) {
+    input.disabled = false;
+    delete input.dataset.saving;
+    showToast("儲存失敗，請稍後再試");
+    input.focus();
+    return;
+  }
+  checklistItemsState = checklistItemsState.map((entry) => entry.id === item.id ? normalizeChecklistRow(data) : entry);
+  renderChecklist();
+  showToast("已更新準備項目");
+}
+
 const checklist = document.querySelector("#checklist");
 let checklistSwipe = null;
 let suppressChecklistClick = false;
 let suppressChecklistChange = false;
-packingAddButton.addEventListener("click", () => {
-  const isOpen = packingAddButton.getAttribute("aria-expanded") === "true";
-  packingAddForm.classList.toggle("is-open", !isOpen);
-  packingAddButton.setAttribute("aria-expanded", String(!isOpen));
-  if (!isOpen) packingAddInput.focus();
-});
-packingAddCancel.addEventListener("click", () => {
-  packingAddForm.classList.remove("is-open");
-  packingAddButton.setAttribute("aria-expanded", "false");
-  packingAddInput.value = "";
-});
-packingAddForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const added = await addChecklistItem(Number(packingAddGroup.value), packingAddInput);
-  if (added) {
-    packingAddForm.classList.remove("is-open");
-    packingAddButton.setAttribute("aria-expanded", "false");
-    packingAddInput.value = "";
-  }
-});
 checklist.addEventListener("change", async (event) => {
   const input = event.target.closest("input[data-check]");
   if (!input) return;
@@ -713,6 +747,7 @@ checklist.addEventListener("change", async (event) => {
     return;
   }
   checklistItemsState = checklistItemsState.map((item) => item.id === id ? normalizeChecklistRow(data) : item);
+  input.closest(".check-item")?.classList.toggle("is-completed", nextValue);
   showToast(input.checked ? "已加入完成清單" : "已從清單移除");
 });
 checklist.addEventListener("click", (event) => {
@@ -737,7 +772,29 @@ checklist.addEventListener("click", (event) => {
     deleteChecklistItem(deleteButton);
     return;
   }
+  const editButton = event.target.closest("[data-check-edit]");
+  if (editButton) {
+    startChecklistLabelEdit(editButton);
+    return;
+  }
   if (!event.target.closest(".check-item")) closeSwipedChecklistItems();
+});
+checklist.addEventListener("keydown", (event) => {
+  const input = event.target.closest(".check-edit-input");
+  if (!input) return;
+  if (event.key === "Enter") {
+    event.preventDefault();
+    saveChecklistLabel(input);
+  }
+  if (event.key === "Escape") {
+    event.preventDefault();
+    const item = checklistItemsState.find((entry) => entry.id === input.dataset.checkEditInput);
+    if (item) restoreChecklistLabelEditor(input, item.label);
+  }
+});
+checklist.addEventListener("focusout", (event) => {
+  const input = event.target.closest(".check-edit-input");
+  if (input) window.setTimeout(() => saveChecklistLabel(input), 0);
 });
 checklist.addEventListener("submit", (event) => {
   const form = event.target.closest("[data-check-form]");
@@ -749,7 +806,7 @@ checklist.addEventListener("pointerdown", (event) => {
   const item = event.target.closest(".check-item");
   if (!item || (event.pointerType === "mouse" && event.button !== 0)) return;
   checklistSwipe = { item, shell: item.closest(".check-item-shell"), pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, moved: false };
-  item.setPointerCapture?.(event.pointerId);
+  event.target.setPointerCapture?.(event.pointerId);
 });
 checklist.addEventListener("pointermove", (event) => {
   if (!checklistSwipe || event.pointerId !== checklistSwipe.pointerId) return;
@@ -1007,6 +1064,7 @@ function switchView(view) {
   document.querySelectorAll("[data-panel]").forEach((panel) => panel.classList.toggle("active", panel.dataset.panel === view));
   document.querySelectorAll("[data-view]").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
   siteHeader.classList.toggle("is-hidden", view !== "itinerary");
+  document.body.classList.toggle("itinerary-background", view === "itinerary");
   if (view !== "itinerary") window.scrollTo({ top: document.querySelector(`[data-panel="${view}"]`).offsetTop - 26, behavior: "smooth" });
 }
 

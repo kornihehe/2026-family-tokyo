@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#fbf8ee" />
     <meta name="description" content="2026 年 11 月 27 日至 12 月 2 日的東京、富士急互動式旅程。" />
+    <link rel="icon" type="image/png" href="assets/favicon.png" />
     <title>旅日誌</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="itinerary-background">
     <div class="grain" aria-hidden="true"></div>
     <header class="site-header">
       <div class="day-rail">
@@ -44,21 +45,6 @@
 
       <section class="view-panel list-view section-pad" id="listView" data-panel="list">
         <h2 class="plain-title">準備</h2>
-        <div class="packing-section-heading">
-          <span>PRE-DEPARTURE</span>
-          <h3>行前準備</h3>
-          <div class="packing-add" id="packingAdd">
-            <button class="packing-add-button" id="packingAddButton" type="button" aria-expanded="false"><span class="check-add-icon" aria-hidden="true">＋</span>新增準備項目</button>
-            <form class="packing-add-form" id="packingAddForm">
-              <label class="sr-only" for="packingAddGroup">選擇分類</label>
-              <select id="packingAddGroup"></select>
-              <label class="sr-only" for="packingAddInput">新增準備項目</label>
-              <input id="packingAddInput" type="text" maxlength="80" placeholder="輸入準備項目" autocomplete="off" />
-              <button class="check-add-submit" type="submit">加入</button>
-              <button class="check-add-cancel" id="packingAddCancel" type="button">取消</button>
-            </form>
-          </div>
-        </div>
         <div class="checklist" id="checklist"></div>
       </section>
     </main>
