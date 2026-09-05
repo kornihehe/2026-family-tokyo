@@ -7,8 +7,6 @@ const icons = {
   plane: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-5-5 18-3-8-10-5Z"></path><path d="m13 16 5-5"></path></svg>',
   arrowUpRight: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M7 7h10v10"></path></svg>',
   routeArrow: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>',
-  chevronDown: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>',
-  chevronUp: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"></path></svg>',
   check: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>'
 };
 const weatherIcons = {
@@ -21,7 +19,7 @@ const weatherIcons = {
 
 const days = [
   {
-    number: "01", date: "11/27", title: "抵達成田・取車", subtitle: "先把方向盤握好，再往住宿出發。", flight: { code: "IT280", from: "高雄國際機場", to: "東京成田機場", depart: "08:00", arrive: "12:10", terminal: "Terminal 2" }, weather: { label: "成田", latitude: 35.772, longitude: 140.3929 }, items: [
+    number: "01", date: "11/27", weekday: "FRI", title: "抵達成田・取車", subtitle: "先把方向盤握好，再往住宿出發。", flight: { code: "IT280", from: "高雄國際機場", to: "東京成田機場", depart: "08:00", arrive: "12:10", terminal: "Terminal 2" }, weather: { label: "成田", latitude: 35.772, longitude: 140.3929 }, items: [
       { time: "12:10", type: "ARRIVE", title: "抵達成田機場 T2", description: "去程 IT280 抵達成田機場第二航廈，先完成入境與領行李。", location: "成田國際機場 Terminal 2", detail: "IT280 · KHH → NRT", mapUrl: mapSearch("Narita International Airport Terminal 2") },
       { time: "13:30", type: "RENTAL", title: "Nissan Rent a Car 第二航廈", description: "前往 Nissan Rent a Car 辦理取車，確認車況、導航與還車資訊。", location: "Nissan Rent a Car Narita Airport", detail: "租車官網", mapUrl: mapSearch("Nissan Rent a Car Narita Airport Terminal 2"), siteUrl: "https://nissan-rentacar.com/zh" },
       { time: "16:00", type: "DRIVE", title: "開車前往住宿", description: "離開成田後前往第一晚住宿，晚上以休息和整理行李為主。", location: "第一晚住宿", detail: "Google Maps 住宿連結", mapUrl: lodgingUrl },
@@ -30,7 +28,7 @@ const days = [
     ]
   },
   {
-    number: "02", date: "11/28", title: "富士急一日", subtitle: "從早上九點玩到晚上七點。", weather: { label: "富士急", latitude: 35.4881, longitude: 138.7805 }, items: [
+    number: "02", date: "11/28", weekday: "SAT", title: "富士急一日", subtitle: "從早上九點玩到晚上七點。", weather: { label: "富士急", latitude: 35.4881, longitude: 138.7805 }, items: [
       { time: "07:00", type: "DRIVE", title: "開車前往富士急樂園", description: "從住宿出發前往富士急，建議提早出發並預留停車時間。", location: "富士急樂園", detail: "導航至遊樂園", mapUrl: mapSearch("Fuji-Q Highland") },
       { time: "09:00", type: "PARK", title: "富士急樂園", description: "9:00–19:00 玩一整天，入園後先確認想玩的設施與排隊狀況。", location: "富士急樂園", detail: "09:00–19:00", mapUrl: mapSearch("Fuji-Q Highland") },
       { time: "19:00", type: "DRIVE", title: "開回東京市區", description: "離開富士急後直接往新宿還車點移動，建議依即時路況調整。", location: "新宿 Nissan Rent a Car", detail: "東京市區還車", mapUrl: mapSearch("Nissan Rent a Car Shinjuku Tokyo") },
@@ -39,22 +37,22 @@ const days = [
     ]
   },
   {
-    number: "03", date: "11/29", title: "東京自由日", subtitle: "留一格空白，等你決定想去哪裡。", weather: { label: "東京", latitude: 35.6762, longitude: 139.6503 }, items: [
+    number: "03", date: "11/29", weekday: "SUN", title: "東京自由日", subtitle: "留一格空白，等你決定想去哪裡。", weather: { label: "東京", latitude: 35.6762, longitude: 139.6503 }, items: [
       { time: "ALL DAY", type: "OPEN", title: "東京自由安排", description: "目前尚未指定景點；可以之後再補上，網站會一起加上 Google Maps。", location: "待安排", detail: "尚未決定" }
     ]
   },
   {
-    number: "04", date: "11/30", title: "東京自由日", subtitle: "不排滿，也是一種行程。", weather: { label: "東京", latitude: 35.6762, longitude: 139.6503 }, items: [
+    number: "04", date: "11/30", weekday: "MON", title: "東京自由日", subtitle: "不排滿，也是一種行程。", weather: { label: "東京", latitude: 35.6762, longitude: 139.6503 }, items: [
       { time: "ALL DAY", type: "OPEN", title: "東京自由安排", description: "目前尚未指定景點；可以之後再補上，網站會一起加上 Google Maps。", location: "待安排", detail: "尚未決定" }
     ]
   },
   {
-    number: "05", date: "12/01", title: "Pokémon Kanto", subtitle: "把寶可夢行程留給東京的最後一天。", weather: { label: "東京", latitude: 35.6762, longitude: 139.6503 }, items: [
+    number: "05", date: "12/01", weekday: "TUE", title: "Pokémon Kanto", subtitle: "把寶可夢行程留給東京的最後一天。", weather: { label: "東京", latitude: 35.6762, longitude: 139.6503 }, items: [
       { time: "TBD", type: "POKÉMON", title: "Pokémon Kanto（分店待確認）", description: "前往 Pokémon Kanto；目前先用 Google Maps 搜尋連結，等確認確切分店後再替換。", location: "Pokémon Kanto · Tokyo", detail: "Google Maps 搜尋", mapUrl: mapSearch("Pokemon Kanto Tokyo") }
     ]
   },
   {
-    number: "06", date: "12/02", title: "回到成田", subtitle: "帶著戰利品，回到第二航廈。", flight: { code: "IT281", from: "東京成田機場", to: "高雄國際機場", depart: "11:25", arrive: "15:05", terminal: "Terminal 2" }, weather: { label: "成田", latitude: 35.772, longitude: 140.3929 }, items: [
+    number: "06", date: "12/02", weekday: "WED", title: "回到成田", subtitle: "帶著戰利品，回到第二航廈。", flight: { code: "IT281", from: "東京成田機場", to: "高雄國際機場", depart: "11:25", arrive: "15:05", terminal: "Terminal 2" }, weather: { label: "成田", latitude: 35.772, longitude: 140.3929 }, items: [
       { time: "07:00", type: "DRIVE", title: "前往成田機場 T2", description: "從東京市區住宿出發前往成田機場第二航廈，預留足夠交通緩衝。", location: "成田國際機場 Terminal 2", detail: "Google Maps 導航", mapUrl: mapSearch("Narita International Airport Terminal 2") },
       { time: "11:25", type: "DEPART", title: "回程 IT281", description: "回程航班從成田機場第二航廈出發，目的地為高雄國際機場。", location: "成田國際機場 Terminal 2", detail: "NRT → KHH · Terminal 2", mapUrl: mapSearch("Narita International Airport Terminal 2") }
     ]
@@ -68,7 +66,7 @@ const checklistGroups = [
 
 const dayPicker = document.querySelector("#dayPicker");
 const flightInfo = document.querySelector("#flightInfo");
-const dayWeather = document.querySelector("#dayWeather");
+const weatherSummary = document.querySelector("#weatherSummary");
 const timeline = document.querySelector("#timeline");
 const toast = document.querySelector("#toast");
 let selectedDay = 0;
@@ -78,7 +76,7 @@ const weatherCache = new Map();
 function renderDayPicker() {
   dayPicker.innerHTML = days.map((day, index) => `
     <button class="day-button ${index === selectedDay ? "active" : ""}" data-day="${index}" role="tab" aria-selected="${index === selectedDay}" type="button">
-      <span>DAY ${Number(day.number)}</span><strong>${day.date}</strong>
+      <span>DAY ${Number(day.number)}</span><strong>${day.date.split("/")[1]}</strong><small>${day.weekday}</small>
     </button>`).join("");
   dayPicker.querySelectorAll(".day-button").forEach((button) => button.addEventListener("click", () => {
     selectedDay = Number(button.dataset.day);
@@ -89,8 +87,8 @@ function renderDayPicker() {
 
 function renderDay() {
   const day = days[selectedDay];
-  flightInfo.innerHTML = day.flight ? `<article class="flight-card"><div class="flight-card-head"><span>${icons.plane}<strong>航班資訊</strong></span><span>${day.flight.code}</span></div><div class="flight-route"><div><small>起飛</small><strong>${day.flight.depart}</strong><span>${day.flight.from}</span></div><span class="flight-route-line" aria-hidden="true">${icons.routeArrow}</span><div class="flight-arrival"><small>抵達</small><strong>${day.flight.arrive}</strong><span>${day.flight.to}</span></div></div><div class="flight-card-foot"><span>${day.flight.terminal}</span><span>${day.subtitle}</span></div></article>` : "";
-  dayWeather.innerHTML = `<div class="day-weather" data-weather="${selectedDay}"><span class="weather-icon">${weatherIcons.cloud}</span><div><span class="weather-label">${day.weather.label} / WEATHER</span><strong class="weather-temp">載入中</strong><small class="weather-note">正在查詢預報</small></div></div>`;
+  flightInfo.innerHTML = day.flight ? `<article class="flight-card"><div class="flight-card-head"><span>${icons.plane}<strong>航班資訊</strong></span><span>${day.flight.code}</span></div><div class="flight-route"><div><small>起飛</small><strong>${day.flight.depart}</strong><span>${day.flight.from}</span></div><span class="flight-route-line" aria-hidden="true">${icons.routeArrow}</span><div class="flight-arrival"><small>抵達</small><strong>${day.flight.arrive}</strong><span>${day.flight.to}</span></div></div><div class="flight-card-foot"><span>${day.flight.terminal}</span></div></article>` : "";
+  weatherSummary.innerHTML = `<div class="weather-summary-inner" data-weather="${selectedDay}"><span class="weather-icon">${weatherIcons.cloud}</span><span class="weather-place">${day.weather.label}</span><strong class="weather-temp">載入中</strong><span class="weather-note">正在查詢預報</span></div>`;
   loadWeather(day, selectedDay);
   const timelineItems = day.flight ? day.items.filter((item) => !["ARRIVE", "DEPART"].includes(item.type)) : day.items;
   timeline.innerHTML = timelineItems.map((item, index) => {
@@ -101,18 +99,12 @@ function renderDay() {
       <time class="timeline-time">${item.time}</time>
       <div class="timeline-card" data-key="${key}">
         <span class="item-type">${item.type}</span><div class="timeline-title-row"><h4>${item.title}</h4>${mapLink}</div>
-        <p>${item.description}</p><button class="expand-button" type="button" aria-label="展開說明">${icons.chevronDown}</button>
+        <p>${item.description}</p>
         <div class="item-meta"><span>${item.location}</span><span>${item.detail}</span></div>
         ${siteLink}
       </div>
     </article>`;
   }).join("");
-  timeline.querySelectorAll(".expand-button").forEach((button) => button.addEventListener("click", () => {
-    const card = button.closest(".timeline-card");
-    const expanded = card.classList.toggle("expanded");
-    button.innerHTML = expanded ? icons.chevronUp : icons.chevronDown;
-    button.setAttribute("aria-label", expanded ? "收起說明" : "展開說明");
-  }));
 }
 
 function weatherDescription(code) {
