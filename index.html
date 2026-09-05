@@ -86,10 +86,10 @@
       <form class="itinerary-form" id="itineraryForm">
         <div class="dialog-head">
           <div>
-            <span class="dialog-kicker">ITINERARY</span>
+            <span class="dialog-kicker" id="itineraryDialogKicker">ITINERARY</span>
             <h2 id="itineraryDialogTitle">新增行程</h2>
           </div>
-          <button class="dialog-close" id="closeItineraryDialog" type="button" aria-label="關閉新增行程視窗">
+          <button class="dialog-close" id="closeItineraryDialog" type="button" aria-label="關閉行程視窗">
             <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12"></path><path d="M18 6 6 18"></path></svg>
           </button>
         </div>
@@ -127,6 +127,14 @@
           <label class="form-field form-field-wide">
             <span>說明</span>
             <textarea id="itineraryDescription" name="description" rows="3" placeholder="補充集合、預約或移動資訊" maxlength="240"></textarea>
+          </label>
+          <label class="form-field">
+            <span>地點</span>
+            <input id="itineraryLocation" name="location" type="text" placeholder="例如：東京車站" maxlength="120" />
+          </label>
+          <label class="form-field">
+            <span>備註</span>
+            <input id="itineraryDetail" name="detail" type="text" placeholder="例如：預約 19:00" maxlength="120" />
           </label>
           <label class="form-field form-field-wide">
             <span>Google Maps 連結 <small>選填</small></span>

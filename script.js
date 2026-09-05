@@ -5,9 +5,8 @@ const firstNightWalkUrl = "https://maps.app.goo.gl/uW5yAT3o2PX8bxLq8";
 const icons = {
   mapPin: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>',
   plane: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-5-5 18-3-8-10-5Z"></path><path d="m13 16 5-5"></path></svg>',
-  flightPlane: '<svg class="svg-icon flight-plane-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h6l3-9h2l-1 9h7l2 2-2 2h-7l1 9h-2l-3-9H3l-1-2 1-2Z"></path></svg>',
+  flightPlane: '<svg class="svg-icon flight-plane-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"></path></svg>',
   arrowUpRight: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M7 7h10v10"></path></svg>',
-  routeArrow: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>',
   check: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>'
 };
 const weatherIcons = {
@@ -77,17 +76,24 @@ const toast = document.querySelector("#toast");
 const addItineraryButton = document.querySelector("#addItineraryButton");
 const itineraryDialog = document.querySelector("#itineraryDialog");
 const itineraryForm = document.querySelector("#itineraryForm");
+const itineraryDialogKicker = document.querySelector("#itineraryDialogKicker");
+const itineraryDialogTitle = document.querySelector("#itineraryDialogTitle");
 const itineraryDate = document.querySelector("#itineraryDate");
 const itineraryTime = document.querySelector("#itineraryTime");
 const itineraryType = document.querySelector("#itineraryType");
 const itineraryTitle = document.querySelector("#itineraryTitle");
 const itineraryDescription = document.querySelector("#itineraryDescription");
+const itineraryLocation = document.querySelector("#itineraryLocation");
+const itineraryDetail = document.querySelector("#itineraryDetail");
 const itineraryMapUrl = document.querySelector("#itineraryMapUrl");
 const saveItineraryButton = document.querySelector("#saveItineraryButton");
 let selectedDay = 0;
 let checkedItems = JSON.parse(localStorage.getItem("travel-journal-checklist") || "[]");
+let itineraryOverrides = JSON.parse(localStorage.getItem("travel-journal-itinerary-overrides") || "{}");
 const weatherCache = new Map();
 let remoteItems = [];
+let renderedTimelineItems = new Map();
+let editingItem = null;
 
 function dateForDay(day) {
   const [month, date] = day.date.split("/");
@@ -118,6 +124,9 @@ function remoteItemsForDay(day) {
     .filter((item) => item.trip_date === dateForDay(day))
     .map((item) => ({
       id: item.id,
+      editKey: `remote-${item.id}`,
+      source: "remote",
+      tripDate: item.trip_date,
       time: item.time_label || "TBD",
       type: item.type || "OPEN",
       title: item.title || "未命名行程",
@@ -126,6 +135,24 @@ function remoteItemsForDay(day) {
       detail: item.detail || "",
       mapUrl: safeMapUrl(item.map_url || "")
     }));
+}
+
+function fixedItemsForDay(day, dayIndex) {
+  return day.items
+    .filter((item) => !(day.flight && ["ARRIVE", "DEPART"].includes(item.type)))
+    .map((item) => {
+      const itemIndex = day.items.indexOf(item);
+      const editKey = `fixed-${dayIndex}-${itemIndex}`;
+      const override = itineraryOverrides[editKey] || {};
+      return {
+        ...item,
+        ...override,
+        editKey,
+        source: "fixed",
+        tripDate: dateForDay(day),
+        mapUrl: Object.hasOwn(override, "mapUrl") ? override.mapUrl : safeMapUrl(item.mapUrl || "")
+      };
+    });
 }
 
 function renderDayPicker() {
@@ -142,19 +169,18 @@ function renderDayPicker() {
 
 function renderDay() {
   const day = days[selectedDay];
-  flightInfo.innerHTML = day.flight ? `<article class="flight-card"><div class="flight-card-head"><span class="flight-airline"><strong>${day.flight.airline}</strong><b>·</b><span>${day.flight.code}</span></span></div><div class="flight-route"><div class="flight-endpoint"><strong class="flight-airport">${day.flight.fromCode}</strong><span class="flight-time">${day.flight.depart}</span></div><span class="flight-route-line" aria-hidden="true">${icons.flightPlane}${icons.routeArrow}<small>${day.flight.duration}</small></span><div class="flight-endpoint flight-arrival"><strong class="flight-airport">${day.flight.toCode}</strong><span class="flight-time">${day.flight.arrive}</span></div></div><div class="flight-card-foot"><span>${day.flight.dateLabel}</span><span>${day.flight.terminal}</span></div></article>` : "";
+  flightInfo.innerHTML = day.flight ? `<article class="flight-card"><div class="flight-card-head"><span class="flight-airline"><strong>${day.flight.airline}</strong><b>·</b><span>${day.flight.code}</span></span></div><div class="flight-route"><div class="flight-endpoint"><strong class="flight-airport">${day.flight.fromCode}</strong><span class="flight-time">${day.flight.depart}</span></div><span class="flight-route-line" aria-hidden="true">${icons.flightPlane}<small>${day.flight.duration}</small></span><div class="flight-endpoint flight-arrival"><strong class="flight-airport">${day.flight.toCode}</strong><span class="flight-time">${day.flight.arrive}</span></div></div><div class="flight-card-foot"><span>${day.flight.dateLabel}</span><span>${day.flight.terminal}</span></div></article>` : "";
   weatherSummary.innerHTML = `<div class="weather-summary-inner" data-weather="${selectedDay}"><span class="weather-icon">${weatherIcons.cloud}</span><span class="weather-place">${day.weather.label}</span><strong class="weather-temp">載入中</strong><span class="weather-note">正在查詢預報</span></div>`;
   loadWeather(day, selectedDay);
-  const fixedItems = day.flight ? day.items.filter((item) => !["ARRIVE", "DEPART"].includes(item.type)) : day.items;
-  const timelineItems = [...fixedItems, ...remoteItemsForDay(day)];
+  const timelineItems = [...fixedItemsForDay(day, selectedDay), ...remoteItemsForDay(day)];
+  renderedTimelineItems = new Map(timelineItems.map((item) => [item.editKey, item]));
   timeline.innerHTML = timelineItems.map((item, index) => {
-    const key = `${selectedDay}-${index}`;
     const mapUrl = safeMapUrl(item.mapUrl || "");
     const mapLink = mapUrl ? `<a class="map-link" href="${escapeHtml(mapUrl)}" aria-label="開啟 Google Maps" title="開啟 Google Maps">${icons.mapPin}<span class="sr-only">Google Maps</span></a>` : "";
     const itemMeta = [item.location, item.detail].filter(Boolean).map((value) => `<span>${escapeHtml(value)}</span>`).join("");
     return `<article class="timeline-item" style="animation-delay:${index * 70}ms">
       <time class="timeline-time">${escapeHtml(item.time)}</time>
-      <div class="timeline-card" data-key="${key}">
+      <div class="timeline-card" data-item-key="${escapeHtml(item.editKey)}" data-item-source="${item.source}" role="button" tabindex="0" aria-label="編輯${escapeHtml(item.title)}">
         <span class="item-type">${escapeHtml(item.type)}</span><div class="timeline-title-row"><h4>${escapeHtml(item.title)}</h4>${mapLink}</div>
         <p>${escapeHtml(item.description)}</p>
         ${itemMeta ? `<div class="item-meta">${itemMeta}</div>` : ""}
@@ -270,19 +296,63 @@ async function loadRemoteItems() {
   }
 }
 
+function setDialogMode(isEditing) {
+  itineraryDialogKicker.textContent = isEditing ? "EDIT ITINERARY" : "ITINERARY";
+  itineraryDialogTitle.textContent = isEditing ? "編輯行程" : "新增行程";
+  saveItineraryButton.textContent = isEditing ? "儲存變更" : "儲存行程";
+}
+
 function openItineraryDialog() {
+  editingItem = null;
   itineraryForm.reset();
+  itineraryDate.disabled = false;
   itineraryDate.value = dateForDay(days[selectedDay]);
   itineraryType.value = "OPEN";
+  setDialogMode(false);
+  itineraryDialog.showModal();
+  requestAnimationFrame(() => itineraryTitle.focus());
+}
+
+function openEditItineraryDialog(editKey) {
+  const item = renderedTimelineItems.get(editKey);
+  if (!item) return;
+  editingItem = { source: item.source, id: item.id, editKey: item.editKey };
+  itineraryForm.reset();
+  itineraryDate.value = item.tripDate || dateForDay(days[selectedDay]);
+  itineraryTime.value = item.time || "";
+  itineraryType.value = item.type || "OPEN";
+  itineraryTitle.value = item.title || "";
+  itineraryDescription.value = item.description || "";
+  itineraryLocation.value = item.location || "";
+  itineraryDetail.value = item.detail || "";
+  itineraryMapUrl.value = item.mapUrl || "";
+  itineraryDate.disabled = item.source === "fixed";
+  setDialogMode(true);
   itineraryDialog.showModal();
   requestAnimationFrame(() => itineraryTitle.focus());
 }
 
 function closeItineraryDialog() {
   itineraryDialog.close();
+  editingItem = null;
+  itineraryDate.disabled = false;
+  setDialogMode(false);
 }
 
 addItineraryButton.addEventListener("click", openItineraryDialog);
+timeline.addEventListener("click", (event) => {
+  if (event.target instanceof Element && event.target.closest("a")) return;
+  const card = event.target.closest(".timeline-card");
+  if (card) openEditItineraryDialog(card.dataset.itemKey);
+});
+timeline.addEventListener("keydown", (event) => {
+  if (!["Enter", " "].includes(event.key)) return;
+  if (event.target instanceof Element && event.target.closest("a")) return;
+  const card = event.target.closest(".timeline-card");
+  if (!card) return;
+  event.preventDefault();
+  openEditItineraryDialog(card.dataset.itemKey);
+});
 document.querySelector("#closeItineraryDialog").addEventListener("click", closeItineraryDialog);
 document.querySelector("#cancelItineraryDialog").addEventListener("click", closeItineraryDialog);
 itineraryDialog.addEventListener("click", (event) => {
@@ -290,10 +360,6 @@ itineraryDialog.addEventListener("click", (event) => {
 });
 itineraryForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!supabaseClient) {
-    showToast("資料庫尚未連線");
-    return;
-  }
   const title = itineraryTitle.value.trim();
   const mapInput = itineraryMapUrl.value.trim();
   const mapUrl = mapInput ? safeMapUrl(mapInput) : null;
@@ -301,26 +367,73 @@ itineraryForm.addEventListener("submit", async (event) => {
     showToast(mapInput && !mapUrl ? "請貼上有效的 Google Maps 連結" : "請填寫行程標題");
     return;
   }
-  saveItineraryButton.disabled = true;
   const payload = {
     trip_date: itineraryDate.value,
     time_label: itineraryTime.value.trim() || "TBD",
     type: itineraryType.value,
     title,
     description: itineraryDescription.value.trim(),
-    location: "",
-    detail: "使用者新增",
-    map_url: mapUrl,
-    sort_order: 100
+    location: itineraryLocation.value.trim(),
+    detail: itineraryDetail.value.trim(),
+    map_url: mapUrl
   };
-  const { data, error } = await supabaseClient.from("itinerary_items").insert(payload).select().single();
+
+  if (editingItem?.source === "fixed") {
+    itineraryOverrides[editingItem.editKey] = {
+      time: payload.time_label,
+      type: payload.type,
+      title: payload.title,
+      description: payload.description,
+      location: payload.location,
+      detail: payload.detail,
+      mapUrl: mapUrl || ""
+    };
+    localStorage.setItem("travel-journal-itinerary-overrides", JSON.stringify(itineraryOverrides));
+    renderDay();
+    closeItineraryDialog();
+    showToast("行程已更新（保存在此瀏覽器）");
+    return;
+  }
+
+  if (!supabaseClient) {
+    showToast("資料庫尚未連線");
+    return;
+  }
+
+  saveItineraryButton.disabled = true;
+  if (editingItem?.source === "remote") {
+    const { data, error } = await supabaseClient
+      .from("itinerary_items")
+      .update(payload)
+      .eq("id", editingItem.id)
+      .select()
+      .single();
+    saveItineraryButton.disabled = false;
+    if (error) {
+      showToast("儲存失敗，請稍後再試");
+      return;
+    }
+    remoteItems = remoteItems.map((item) => item.id === data.id ? data : item);
+    selectedDay = Math.max(0, days.findIndex((day) => dateForDay(day) === data.trip_date));
+    renderDayPicker();
+    renderDay();
+    closeItineraryDialog();
+    showToast("行程已更新");
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("itinerary_items")
+    .insert({ ...payload, sort_order: 100 })
+    .select()
+    .single();
   saveItineraryButton.disabled = false;
   if (error) {
     showToast("新增失敗，請稍後再試");
     return;
   }
   remoteItems = [...remoteItems, data];
-  selectedDay = days.findIndex((day) => dateForDay(day) === payload.trip_date);
+  selectedDay = Math.max(0, days.findIndex((day) => dateForDay(day) === data.trip_date));
   renderDayPicker();
   renderDay();
   closeItineraryDialog();
