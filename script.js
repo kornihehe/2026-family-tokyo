@@ -4,8 +4,11 @@ const cityLodgingUrl = "https://maps.app.goo.gl/3XAM5BM4JGvse8Gx6";
 const firstNightWalkUrl = "https://maps.app.goo.gl/uW5yAT3o2PX8bxLq8";
 const icons = {
   mapPin: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>',
+  plane: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-5-5 18-3-8-10-5Z"></path><path d="m13 16 5-5"></path></svg>',
   arrowUpRight: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M7 7h10v10"></path></svg>',
-  heart: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"></path></svg>',
+  routeArrow: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>',
+  chevronDown: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>',
+  chevronUp: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"></path></svg>',
   check: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>'
 };
 const weatherIcons = {
@@ -18,7 +21,7 @@ const weatherIcons = {
 
 const days = [
   {
-    number: "01", date: "11/27", title: "抵達成田・取車", subtitle: "先把方向盤握好，再往住宿出發。", weather: { label: "成田", latitude: 35.772, longitude: 140.3929 }, items: [
+    number: "01", date: "11/27", title: "抵達成田・取車", subtitle: "先把方向盤握好，再往住宿出發。", flight: { code: "IT280", from: "高雄國際機場", to: "東京成田機場", depart: "08:00", arrive: "12:10", terminal: "Terminal 2" }, weather: { label: "成田", latitude: 35.772, longitude: 140.3929 }, items: [
       { time: "12:10", type: "ARRIVE", title: "抵達成田機場 T2", description: "去程 IT280 抵達成田機場第二航廈，先完成入境與領行李。", location: "成田國際機場 Terminal 2", detail: "IT280 · KHH → NRT", mapUrl: mapSearch("Narita International Airport Terminal 2") },
       { time: "13:30", type: "RENTAL", title: "Nissan Rent a Car 第二航廈", description: "前往 Nissan Rent a Car 辦理取車，確認車況、導航與還車資訊。", location: "Nissan Rent a Car Narita Airport", detail: "租車官網", mapUrl: mapSearch("Nissan Rent a Car Narita Airport Terminal 2"), siteUrl: "https://nissan-rentacar.com/zh" },
       { time: "16:00", type: "DRIVE", title: "開車前往住宿", description: "離開成田後前往第一晚住宿，晚上以休息和整理行李為主。", location: "第一晚住宿", detail: "Google Maps 住宿連結", mapUrl: lodgingUrl },
@@ -51,7 +54,7 @@ const days = [
     ]
   },
   {
-    number: "06", date: "12/02", title: "回到成田", subtitle: "帶著戰利品，回到第二航廈。", weather: { label: "成田", latitude: 35.772, longitude: 140.3929 }, items: [
+    number: "06", date: "12/02", title: "回到成田", subtitle: "帶著戰利品，回到第二航廈。", flight: { code: "IT281", from: "東京成田機場", to: "高雄國際機場", depart: "11:25", arrive: "15:05", terminal: "Terminal 2" }, weather: { label: "成田", latitude: 35.772, longitude: 140.3929 }, items: [
       { time: "07:00", type: "DRIVE", title: "前往成田機場 T2", description: "從東京市區住宿出發前往成田機場第二航廈，預留足夠交通緩衝。", location: "成田國際機場 Terminal 2", detail: "Google Maps 導航", mapUrl: mapSearch("Narita International Airport Terminal 2") },
       { time: "11:25", type: "DEPART", title: "回程 IT281", description: "回程航班從成田機場第二航廈出發，目的地為高雄國際機場。", location: "成田國際機場 Terminal 2", detail: "NRT → KHH · Terminal 2", mapUrl: mapSearch("Narita International Airport Terminal 2") }
     ]
@@ -64,18 +67,18 @@ const checklistGroups = [
 ];
 
 const dayPicker = document.querySelector("#dayPicker");
-const dayIntro = document.querySelector("#dayIntro");
+const flightInfo = document.querySelector("#flightInfo");
+const dayWeather = document.querySelector("#dayWeather");
 const timeline = document.querySelector("#timeline");
 const toast = document.querySelector("#toast");
 let selectedDay = 0;
-let savedItems = JSON.parse(localStorage.getItem("travel-journal-favorites") || "[]");
 let checkedItems = JSON.parse(localStorage.getItem("travel-journal-checklist") || "[]");
 const weatherCache = new Map();
 
 function renderDayPicker() {
   dayPicker.innerHTML = days.map((day, index) => `
     <button class="day-button ${index === selectedDay ? "active" : ""}" data-day="${index}" role="tab" aria-selected="${index === selectedDay}" type="button">
-      <span>DAY ${day.number}</span><strong>${day.date}</strong>
+      <span>DAY ${Number(day.number)}</span><strong>${day.date}</strong>
     </button>`).join("");
   dayPicker.querySelectorAll(".day-button").forEach((button) => button.addEventListener("click", () => {
     selectedDay = Number(button.dataset.day);
@@ -86,27 +89,29 @@ function renderDayPicker() {
 
 function renderDay() {
   const day = days[selectedDay];
-  dayIntro.innerHTML = `<div class="day-heading"><h3>${day.title}</h3><p>${day.subtitle}</p></div><div class="day-weather" data-weather="${selectedDay}"><span class="weather-icon">${weatherIcons.cloud}</span><div><span class="weather-label">${day.weather.label} / WEATHER</span><strong class="weather-temp">載入中</strong><small class="weather-note">正在查詢預報</small></div></div><span class="day-count">${day.items.length} STOPS / ${day.number}</span>`;
+  flightInfo.innerHTML = day.flight ? `<article class="flight-card"><div class="flight-card-head"><span>${icons.plane}<strong>航班資訊</strong></span><span>${day.flight.code}</span></div><div class="flight-route"><div><small>起飛</small><strong>${day.flight.depart}</strong><span>${day.flight.from}</span></div><span class="flight-route-line" aria-hidden="true">${icons.routeArrow}</span><div class="flight-arrival"><small>抵達</small><strong>${day.flight.arrive}</strong><span>${day.flight.to}</span></div></div><div class="flight-card-foot"><span>${day.flight.terminal}</span><span>${day.subtitle}</span></div></article>` : "";
+  dayWeather.innerHTML = `<div class="day-weather" data-weather="${selectedDay}"><span class="weather-icon">${weatherIcons.cloud}</span><div><span class="weather-label">${day.weather.label} / WEATHER</span><strong class="weather-temp">載入中</strong><small class="weather-note">正在查詢預報</small></div></div>`;
   loadWeather(day, selectedDay);
-  timeline.innerHTML = day.items.map((item, index) => {
+  const timelineItems = day.flight ? day.items.filter((item) => !["ARRIVE", "DEPART"].includes(item.type)) : day.items;
+  timeline.innerHTML = timelineItems.map((item, index) => {
     const key = `${selectedDay}-${index}`;
-    const links = item.mapUrl ? `<div class="location-links"><a class="map-link" href="${item.mapUrl}">${icons.mapPin}Google Maps</a>${item.siteUrl ? `<a class="site-link" href="${item.siteUrl}" target="_blank" rel="noreferrer">租車官網 ${icons.arrowUpRight}</a>` : ""}</div>` : "";
+    const mapLink = item.mapUrl ? `<a class="map-link" href="${item.mapUrl}" aria-label="開啟 Google Maps" title="開啟 Google Maps">${icons.mapPin}<span class="sr-only">Google Maps</span></a>` : "";
+    const siteLink = item.siteUrl ? `<div class="location-links"><a class="site-link" href="${item.siteUrl}" target="_blank" rel="noreferrer">租車官網 ${icons.arrowUpRight}</a></div>` : "";
     return `<article class="timeline-item" style="animation-delay:${index * 70}ms">
       <time class="timeline-time">${item.time}</time>
       <div class="timeline-card" data-key="${key}">
-        <button class="favorite ${savedItems.includes(key) ? "active" : ""}" data-favorite="${key}" aria-label="${savedItems.includes(key) ? "取消收藏" : "收藏"}" type="button">${icons.heart}</button>
-        <span class="item-type">${item.type}</span><h4>${item.title}</h4>
-        <p>${item.description}</p><button class="expand-button" type="button">展開</button>
+        <span class="item-type">${item.type}</span><div class="timeline-title-row"><h4>${item.title}</h4>${mapLink}</div>
+        <p>${item.description}</p><button class="expand-button" type="button" aria-label="展開說明">${icons.chevronDown}</button>
         <div class="item-meta"><span>${item.location}</span><span>${item.detail}</span></div>
-        ${links}
+        ${siteLink}
       </div>
     </article>`;
   }).join("");
-  timeline.querySelectorAll("[data-favorite]").forEach((button) => button.addEventListener("click", () => toggleFavorite(button.dataset.favorite, button)));
   timeline.querySelectorAll(".expand-button").forEach((button) => button.addEventListener("click", () => {
     const card = button.closest(".timeline-card");
-    card.classList.toggle("expanded");
-    button.textContent = card.classList.contains("expanded") ? "收起" : "展開";
+    const expanded = card.classList.toggle("expanded");
+    button.innerHTML = expanded ? icons.chevronUp : icons.chevronDown;
+    button.setAttribute("aria-label", expanded ? "收起說明" : "展開說明");
   }));
 }
 
@@ -179,14 +184,6 @@ async function loadWeather(day, dayIndex) {
   } catch (error) {
     setWeatherUnavailable(state);
   }
-}
-
-function toggleFavorite(key, button) {
-  savedItems = savedItems.includes(key) ? savedItems.filter((item) => item !== key) : [...savedItems, key];
-  localStorage.setItem("travel-journal-favorites", JSON.stringify(savedItems));
-  button.classList.toggle("active", savedItems.includes(key));
-  button.setAttribute("aria-label", savedItems.includes(key) ? "取消收藏" : "收藏");
-  showToast(savedItems.includes(key) ? "已收藏這一站" : "已取消收藏");
 }
 
 function renderChecklist() {

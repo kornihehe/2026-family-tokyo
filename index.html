@@ -5,36 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#eef4f5" />
     <meta name="description" content="2026 年 11 月 27 日至 12 月 2 日的東京、富士急互動式旅程。" />
-    <title>旅日誌 · 東京出發，去富士急</title>
+    <title>旅日誌</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="grain" aria-hidden="true"></div>
     <header class="site-header">
       <a class="brand" href="#top" aria-label="回到旅日誌首頁">旅日誌</a>
+      <div class="day-rail">
+        <div class="day-picker" id="dayPicker" role="tablist" aria-label="選擇旅程日程"></div>
+      </div>
     </header>
 
     <main id="top">
-      <section class="hero section-pad">
-        <div class="hero-copy reveal reveal-one">
-          <h1>東京出發，<em>去富士急。</em></h1>
-          <div class="hero-meta">
-            <span><b>成田 → 東京</b> Japan</span>
-            <span><b>NOV 27 — DEC 02</b> 2026</span>
-          </div>
-        </div>
-      </section>
-
       <section class="view-panel active" id="itineraryView" data-panel="itinerary">
-        <div class="day-rail section-pad">
-          <div class="day-picker" id="dayPicker" role="tablist" aria-label="選擇旅程日程"></div>
-        </div>
-
         <div class="itinerary-layout section-pad">
-          <div class="day-intro" id="dayIntro"></div>
+          <div class="flight-info" id="flightInfo"></div>
+          <div class="day-weather-panel" id="dayWeather"></div>
           <div class="timeline" id="timeline" aria-live="polite"></div>
         </div>
       </section>
@@ -47,35 +37,35 @@
             <h3>IT280</h3>
             <p class="booking-route">KHH / NRT</p>
             <div class="booking-meta"><span>08:00 出發</span><span>12:10 抵達</span><span>Terminal 2</span></div>
-            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Narita%20International%20Airport%20Terminal%202"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>成田 T2 地圖</a>
+            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Narita%20International%20Airport%20Terminal%202" aria-label="開啟成田機場第二航廈地圖" title="開啟成田機場第二航廈地圖"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>成田 T2 地圖</a>
           </article>
           <article class="booking-card">
             <div class="booking-card-head"><span>CAR RENTAL</span><span>11/27–28</span></div>
             <h3>Nissan Rent a Car</h3>
             <p class="booking-route">取車：成田 T2<br />還車：新宿 20:00</p>
             <div class="booking-meta"><span>已安排租車</span><span>第二航廈取車</span></div>
-            <div class="booking-links"><a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Nissan%20Rent%20a%20Car%20Narita%20Airport%20Terminal%202"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>取車地圖</a><a class="site-link" href="https://nissan-rentacar.com/zh" target="_blank" rel="noreferrer">租車官網 <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M7 7h10v10"></path></svg></a></div>
+            <div class="booking-links"><a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Nissan%20Rent%20a%20Car%20Narita%20Airport%20Terminal%202" aria-label="開啟 Nissan Rent a Car 成田第二航廈地圖" title="開啟 Nissan Rent a Car 成田第二航廈地圖"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>取車地圖</a><a class="site-link" href="https://nissan-rentacar.com/zh" target="_blank" rel="noreferrer">租車官網 <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M7 7h10v10"></path></svg></a></div>
           </article>
           <article class="booking-card">
             <div class="booking-card-head"><span>STAY / NIGHT 01</span><span>11/27</span></div>
             <h3>第一晚住宿</h3>
             <p class="booking-route">入住後可前往附近散步</p>
             <div class="booking-meta"><span>Check-in 後</span><span>Google Maps 住宿連結</span></div>
-            <a class="map-link" href="https://maps.app.goo.gl/Ex4w6B12ANb3qAen7"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>住宿地圖</a>
+            <a class="map-link" href="https://maps.app.goo.gl/Ex4w6B12ANb3qAen7" aria-label="開啟第一晚住宿地圖" title="開啟第一晚住宿地圖"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>住宿地圖</a>
           </article>
           <article class="booking-card">
             <div class="booking-card-head"><span>STAY / NIGHT 02–05</span><span>11/28–12/01</span></div>
             <h3>東京市區住宿</h3>
             <p class="booking-route">新宿還車後入住<br />住到離開</p>
             <div class="booking-meta"><span>Check-in 約 21:00</span><span>固定住宿地點</span></div>
-            <a class="map-link" href="https://maps.app.goo.gl/3XAM5BM4JGvse8Gx6"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>住宿地圖</a>
+            <a class="map-link" href="https://maps.app.goo.gl/3XAM5BM4JGvse8Gx6" aria-label="開啟東京市區住宿地圖" title="開啟東京市區住宿地圖"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>住宿地圖</a>
           </article>
           <article class="booking-card booking-card-accent">
             <div class="booking-card-head"><span>FLIGHT / RETURN</span><span>12/02</span></div>
             <h3>IT281</h3>
             <p class="booking-route">NRT / KHH</p>
             <div class="booking-meta"><span>11:25 出發</span><span>15:05 抵達</span><span>Terminal 2</span></div>
-            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Narita%20International%20Airport%20Terminal%202"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>成田 T2 地圖</a>
+            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Narita%20International%20Airport%20Terminal%202" aria-label="開啟成田機場第二航廈地圖" title="開啟成田機場第二航廈地圖"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>成田 T2 地圖</a>
           </article>
         </div>
       </section>
