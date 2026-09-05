@@ -5,6 +5,7 @@ const firstNightWalkUrl = "https://maps.app.goo.gl/uW5yAT3o2PX8bxLq8";
 const icons = {
   mapPin: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>',
   plane: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-5-5 18-3-8-10-5Z"></path><path d="m13 16 5-5"></path></svg>',
+  flightPlane: '<svg class="svg-icon flight-plane-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h6l3-9h2l-1 9h7l2 2-2 2h-7l1 9h-2l-3-9H3l-1-2 1-2Z"></path></svg>',
   arrowUpRight: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M7 7h10v10"></path></svg>',
   routeArrow: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>',
   check: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>'
@@ -87,7 +88,7 @@ function renderDayPicker() {
 
 function renderDay() {
   const day = days[selectedDay];
-  flightInfo.innerHTML = day.flight ? `<article class="flight-card"><div class="flight-card-head"><span class="flight-airline">${icons.plane}<strong>${day.flight.airline}</strong><b>·</b><span>${day.flight.code}</span></span></div><div class="flight-route"><div class="flight-endpoint"><strong class="flight-airport">${day.flight.fromCode}</strong><span class="flight-time">${day.flight.depart}</span></div><span class="flight-route-line" aria-hidden="true">${icons.routeArrow}<small>${day.flight.duration}</small></span><div class="flight-endpoint flight-arrival"><strong class="flight-airport">${day.flight.toCode}</strong><span class="flight-time">${day.flight.arrive}</span></div></div><div class="flight-card-foot"><span>${day.flight.dateLabel}</span><span>${day.flight.terminal}</span></div></article>` : "";
+  flightInfo.innerHTML = day.flight ? `<article class="flight-card"><div class="flight-card-head"><span class="flight-airline"><strong>${day.flight.airline}</strong><b>·</b><span>${day.flight.code}</span></span></div><div class="flight-route"><div class="flight-endpoint"><strong class="flight-airport">${day.flight.fromCode}</strong><span class="flight-time">${day.flight.depart}</span></div><span class="flight-route-line" aria-hidden="true">${icons.flightPlane}${icons.routeArrow}<small>${day.flight.duration}</small></span><div class="flight-endpoint flight-arrival"><strong class="flight-airport">${day.flight.toCode}</strong><span class="flight-time">${day.flight.arrive}</span></div></div><div class="flight-card-foot"><span>${day.flight.dateLabel}</span><span>${day.flight.terminal}</span></div></article>` : "";
   weatherSummary.innerHTML = `<div class="weather-summary-inner" data-weather="${selectedDay}"><span class="weather-icon">${weatherIcons.cloud}</span><span class="weather-place">${day.weather.label}</span><strong class="weather-temp">載入中</strong><span class="weather-note">正在查詢預報</span></div>`;
   loadWeather(day, selectedDay);
   const timelineItems = day.flight ? day.items.filter((item) => !["ARRIVE", "DEPART"].includes(item.type)) : day.items;
