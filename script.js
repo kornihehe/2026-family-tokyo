@@ -19,9 +19,9 @@ const weatherIcons = {
 
 const days = [
   {
-    number: "01", date: "11/27", weekday: "FRI", title: "抵達成田・取車", subtitle: "先把方向盤握好，再往住宿出發。", flight: { code: "IT280", from: "高雄國際機場", to: "東京成田機場", depart: "08:00", arrive: "12:10", terminal: "Terminal 2" }, weather: { label: "成田", latitude: 35.772, longitude: 140.3929 }, items: [
+    number: "01", date: "11/27", weekday: "FRI", title: "抵達成田・取車", subtitle: "先把方向盤握好，再往住宿出發。", flight: { airline: "TIGERAIR TAIWAN", code: "IT280", fromCode: "KHH", toCode: "NRT", from: "高雄國際機場", to: "東京成田機場", depart: "08:00", arrive: "12:10", duration: "4h10m", dateLabel: "27 Nov 2026 (FRI)", terminal: "Terminal 2" }, weather: { label: "成田", latitude: 35.772, longitude: 140.3929 }, items: [
       { time: "12:10", type: "ARRIVE", title: "抵達成田機場 T2", description: "去程 IT280 抵達成田機場第二航廈，先完成入境與領行李。", location: "成田國際機場 Terminal 2", detail: "IT280 · KHH → NRT", mapUrl: mapSearch("Narita International Airport Terminal 2") },
-      { time: "13:30", type: "RENTAL", title: "Nissan Rent a Car 第二航廈", description: "前往 Nissan Rent a Car 辦理取車，確認車況、導航與還車資訊。", location: "Nissan Rent a Car Narita Airport", detail: "租車官網", mapUrl: mapSearch("Nissan Rent a Car Narita Airport Terminal 2"), siteUrl: "https://nissan-rentacar.com/zh" },
+      { time: "13:30", type: "RENTAL", title: "Nissan Rent a Car 第二航廈", description: "前往 Nissan Rent a Car 辦理取車，確認車況、導航與還車資訊。", location: "", detail: "", mapUrl: mapSearch("Nissan Rent a Car Narita Airport Terminal 2") },
       { time: "16:00", type: "DRIVE", title: "開車前往住宿", description: "離開成田後前往第一晚住宿，晚上以休息和整理行李為主。", location: "第一晚住宿", detail: "Google Maps 住宿連結", mapUrl: lodgingUrl },
       { time: "20:00", type: "CHECK-IN", title: "入住第一晚住宿", description: "把行李放下，確認隔天前往富士急的路線與出發時間。", location: "第一晚住宿", detail: "住宿地點", mapUrl: lodgingUrl },
       { time: "AFTER", type: "WALK", title: "Check-in 後散步", description: "入住後到你提供的地點走走，作為抵達日本的第一晚散步行程。", location: "第一晚住宿附近散步點", detail: "Check-in 後", mapUrl: firstNightWalkUrl }
@@ -52,7 +52,7 @@ const days = [
     ]
   },
   {
-    number: "06", date: "12/02", weekday: "WED", title: "回到成田", subtitle: "帶著戰利品，回到第二航廈。", flight: { code: "IT281", from: "東京成田機場", to: "高雄國際機場", depart: "11:25", arrive: "15:05", terminal: "Terminal 2" }, weather: { label: "成田", latitude: 35.772, longitude: 140.3929 }, items: [
+    number: "06", date: "12/02", weekday: "WED", title: "回到成田", subtitle: "帶著戰利品，回到第二航廈。", flight: { airline: "TIGERAIR TAIWAN", code: "IT281", fromCode: "NRT", toCode: "KHH", from: "東京成田機場", to: "高雄國際機場", depart: "11:25", arrive: "15:05", duration: "3h40m", dateLabel: "02 Dec 2026 (WED)", terminal: "Terminal 2" }, weather: { label: "成田", latitude: 35.772, longitude: 140.3929 }, items: [
       { time: "07:00", type: "DRIVE", title: "前往成田機場 T2", description: "從東京市區住宿出發前往成田機場第二航廈，預留足夠交通緩衝。", location: "成田國際機場 Terminal 2", detail: "Google Maps 導航", mapUrl: mapSearch("Narita International Airport Terminal 2") },
       { time: "11:25", type: "DEPART", title: "回程 IT281", description: "回程航班從成田機場第二航廈出發，目的地為高雄國際機場。", location: "成田國際機場 Terminal 2", detail: "NRT → KHH · Terminal 2", mapUrl: mapSearch("Narita International Airport Terminal 2") }
     ]
@@ -87,7 +87,7 @@ function renderDayPicker() {
 
 function renderDay() {
   const day = days[selectedDay];
-  flightInfo.innerHTML = day.flight ? `<article class="flight-card"><div class="flight-card-head"><span>${icons.plane}<strong>航班資訊</strong></span><span>${day.flight.code}</span></div><div class="flight-route"><div><small>起飛</small><strong>${day.flight.depart}</strong><span>${day.flight.from}</span></div><span class="flight-route-line" aria-hidden="true">${icons.routeArrow}</span><div class="flight-arrival"><small>抵達</small><strong>${day.flight.arrive}</strong><span>${day.flight.to}</span></div></div><div class="flight-card-foot"><span>${day.flight.terminal}</span></div></article>` : "";
+  flightInfo.innerHTML = day.flight ? `<article class="flight-card"><div class="flight-card-head"><span class="flight-airline">${icons.plane}<strong>${day.flight.airline}</strong><b>·</b><span>${day.flight.code}</span></span></div><div class="flight-route"><div class="flight-endpoint"><strong class="flight-airport">${day.flight.fromCode}</strong><span class="flight-time">${day.flight.depart}</span></div><span class="flight-route-line" aria-hidden="true">${icons.routeArrow}<small>${day.flight.duration}</small></span><div class="flight-endpoint flight-arrival"><strong class="flight-airport">${day.flight.toCode}</strong><span class="flight-time">${day.flight.arrive}</span></div></div><div class="flight-card-foot"><span>${day.flight.dateLabel}</span><span>${day.flight.terminal}</span></div></article>` : "";
   weatherSummary.innerHTML = `<div class="weather-summary-inner" data-weather="${selectedDay}"><span class="weather-icon">${weatherIcons.cloud}</span><span class="weather-place">${day.weather.label}</span><strong class="weather-temp">載入中</strong><span class="weather-note">正在查詢預報</span></div>`;
   loadWeather(day, selectedDay);
   const timelineItems = day.flight ? day.items.filter((item) => !["ARRIVE", "DEPART"].includes(item.type)) : day.items;
@@ -95,12 +95,13 @@ function renderDay() {
     const key = `${selectedDay}-${index}`;
     const mapLink = item.mapUrl ? `<a class="map-link" href="${item.mapUrl}" aria-label="開啟 Google Maps" title="開啟 Google Maps">${icons.mapPin}<span class="sr-only">Google Maps</span></a>` : "";
     const siteLink = item.siteUrl ? `<div class="location-links"><a class="site-link" href="${item.siteUrl}" target="_blank" rel="noreferrer">租車官網 ${icons.arrowUpRight}</a></div>` : "";
+    const itemMeta = [item.location, item.detail].filter(Boolean).map((value) => `<span>${value}</span>`).join("");
     return `<article class="timeline-item" style="animation-delay:${index * 70}ms">
       <time class="timeline-time">${item.time}</time>
       <div class="timeline-card" data-key="${key}">
         <span class="item-type">${item.type}</span><div class="timeline-title-row"><h4>${item.title}</h4>${mapLink}</div>
         <p>${item.description}</p>
-        <div class="item-meta"><span>${item.location}</span><span>${item.detail}</span></div>
+        ${itemMeta ? `<div class="item-meta">${itemMeta}</div>` : ""}
         ${siteLink}
       </div>
     </article>`;
