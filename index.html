@@ -36,49 +36,19 @@
 
       <section class="view-panel booking-view section-pad" id="bookingView" data-panel="booking">
         <h2 class="plain-title">預定</h2>
-        <div class="booking-grid">
-          <article class="booking-card booking-card-accent">
-            <div class="booking-card-head"><span>FLIGHT / OUTBOUND</span><span>11/27</span></div>
-            <h3>IT280</h3>
-            <p class="booking-route">KHH / NRT</p>
-            <div class="booking-meta"><span>08:00 出發</span><span>12:10 抵達</span><span>Terminal 2</span></div>
-            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Narita%20International%20Airport%20Terminal%202" aria-label="開啟成田機場第二航廈地圖" title="開啟成田機場第二航廈地圖"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>成田 T2 地圖</a>
-          </article>
-          <article class="booking-card">
-            <div class="booking-card-head"><span>CAR RENTAL</span><span>11/27–28</span></div>
-            <h3>Nissan Rent a Car</h3>
-            <p class="booking-route">取車：成田 T2<br />還車：新宿 20:00</p>
-            <div class="booking-meta"><span>已安排租車</span><span>第二航廈取車</span></div>
-            <div class="booking-links"><a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Nissan%20Rent%20a%20Car%20Narita%20Airport%20Terminal%202" aria-label="開啟 Nissan Rent a Car 成田第二航廈地圖" title="開啟 Nissan Rent a Car 成田第二航廈地圖"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>取車地圖</a><a class="site-link" href="https://nissan-rentacar.com/zh" target="_blank" rel="noreferrer">租車官網 <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M7 7h10v10"></path></svg></a></div>
-          </article>
-          <article class="booking-card">
-            <div class="booking-card-head"><span>STAY / NIGHT 01</span><span>11/27</span></div>
-            <h3>第一晚住宿</h3>
-            <p class="booking-route">入住後可前往附近散步</p>
-            <div class="booking-meta"><span>Check-in 後</span><span>Google Maps 住宿連結</span></div>
-            <a class="map-link" href="https://maps.app.goo.gl/Ex4w6B12ANb3qAen7" aria-label="開啟第一晚住宿地圖" title="開啟第一晚住宿地圖"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>住宿地圖</a>
-          </article>
-          <article class="booking-card">
-            <div class="booking-card-head"><span>STAY / NIGHT 02–05</span><span>11/28–12/01</span></div>
-            <h3>東京市區住宿</h3>
-            <p class="booking-route">新宿還車後入住<br />住到離開</p>
-            <div class="booking-meta"><span>Check-in 約 21:00</span><span>固定住宿地點</span></div>
-            <a class="map-link" href="https://maps.app.goo.gl/3XAM5BM4JGvse8Gx6" aria-label="開啟東京市區住宿地圖" title="開啟東京市區住宿地圖"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>住宿地圖</a>
-          </article>
-          <article class="booking-card booking-card-accent">
-            <div class="booking-card-head"><span>FLIGHT / RETURN</span><span>12/02</span></div>
-            <h3>IT281</h3>
-            <p class="booking-route">NRT / KHH</p>
-            <div class="booking-meta"><span>11:25 出發</span><span>15:05 抵達</span><span>Terminal 2</span></div>
-            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Narita%20International%20Airport%20Terminal%202" aria-label="開啟成田機場第二航廈地圖" title="開啟成田機場第二航廈地圖"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>成田 T2 地圖</a>
-          </article>
+        <div class="booking-grid" id="bookingGrid"></div>
+        <div class="booking-add-wrap">
+          <button class="booking-add-button" id="addBookingButton" type="button"><span aria-hidden="true">＋</span>新增預定</button>
         </div>
       </section>
 
       <section class="view-panel list-view section-pad" id="listView" data-panel="list">
         <h2 class="plain-title">準備</h2>
+        <div class="packing-section-heading">
+          <span>PRE-DEPARTURE</span>
+          <h3>行前準備</h3>
+        </div>
         <div class="checklist" id="checklist"></div>
-        <div class="packing-note"><span><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"></path></svg></span><p>小提醒：11/28 富士急結束後還要回新宿 20:00 還車，建議下午就開始留意回程路況。</p></div>
       </section>
     </main>
 
@@ -144,6 +114,54 @@
         <div class="dialog-actions">
           <button class="dialog-cancel" id="cancelItineraryDialog" type="button">取消</button>
           <button class="dialog-submit" id="saveItineraryButton" type="submit">儲存行程</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="itinerary-dialog booking-dialog" id="bookingDialog" aria-labelledby="bookingDialogTitle">
+      <form class="itinerary-form" id="bookingForm">
+        <div class="dialog-head">
+          <div>
+            <span class="dialog-kicker" id="bookingDialogKicker">BOOKING</span>
+            <h2 id="bookingDialogTitle">新增預定</h2>
+          </div>
+          <button class="dialog-close" id="closeBookingDialog" type="button" aria-label="關閉預定視窗">
+            <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12"></path><path d="M18 6 6 18"></path></svg>
+          </button>
+        </div>
+        <div class="form-grid">
+          <label class="form-field">
+            <span>分類</span>
+            <input id="bookingSection" name="section" type="text" placeholder="例如 STAY / NIGHT 01" maxlength="40" required />
+          </label>
+          <label class="form-field">
+            <span>日期／期間</span>
+            <input id="bookingPeriod" name="period" type="text" placeholder="例如 11/27" maxlength="24" />
+          </label>
+          <label class="form-field form-field-wide">
+            <span>標題</span>
+            <input id="bookingTitle" name="title" type="text" placeholder="例如 Highland Resort Hotel &amp; Spa" maxlength="100" required />
+          </label>
+          <label class="form-field form-field-wide">
+            <span>路線／地址</span>
+            <textarea id="bookingRoute" name="route" rows="2" placeholder="可分行輸入地址或移動資訊" maxlength="240"></textarea>
+          </label>
+          <label class="form-field form-field-wide">
+            <span>卡片資訊 <small>每行一項</small></span>
+            <textarea id="bookingMeta" name="meta" rows="3" placeholder="例如：已確認&#10;例如：不可取消" maxlength="240"></textarea>
+          </label>
+          <label class="form-field form-field-wide">
+            <span>Google Maps 連結 <small>選填</small></span>
+            <input id="bookingMapUrl" name="map_url" type="url" placeholder="貼上 Google Maps 連結" maxlength="500" />
+          </label>
+          <label class="form-field form-field-wide">
+            <span>官網連結 <small>選填</small></span>
+            <input id="bookingSiteUrl" name="site_url" type="url" placeholder="貼上官方網站連結" maxlength="500" />
+          </label>
+        </div>
+        <div class="dialog-actions">
+          <button class="dialog-cancel" id="cancelBookingDialog" type="button">取消</button>
+          <button class="dialog-submit" id="saveBookingButton" type="submit">儲存預定</button>
         </div>
       </form>
     </dialog>

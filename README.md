@@ -25,11 +25,11 @@ python3 -m http.server 4173
 
 ## 修改行程
 
-打開 `script.js` 最上方的 `days` 陣列，修改每天的日期、標題、行程與 `mapUrl` 即可。Google Maps 連結使用 `https://www.google.com/maps/search/?api=1&query=...` 格式；如果有精確的 `maps.app.goo.gl` 連結，可以直接替換。行程卡片的收藏和清單勾選會保存在旅客自己的瀏覽器裡。
+打開 `script.js` 最上方的 `days` 陣列，修改每天的日期、標題、行程與 `mapUrl` 即可。Google Maps 連結使用 `https://www.google.com/maps/search/?api=1&query=...` 格式；如果有精確的 `maps.app.goo.gl` 連結，可以直接替換。行程、預定與準備清單的異動都會同步到 Supabase，不使用 `localStorage`。
 
 ## 新增行程與 Supabase
 
-頁面上的「新增行程」會寫入 Supabase 的 `public.itinerary_items`，並在儲存後顯示到選定日期。資料表需要開啟對匿名使用者的 `SELECT` 與 `INSERT` RLS policy；目前已在本專案 Supabase 建立完成。前端只使用 publishable key，不使用 service role key。
+頁面上的「新增行程」會寫入 Supabase 的 `public.itinerary_items`，預定、準備清單與固定行程編輯則分別使用 `booking_items`、`checklist_items`、`itinerary_overrides`。這些資料表都已開啟對匿名使用者的 CRUD RLS policy 與 Realtime；目前已在本專案 Supabase 建立完成，並已建立 5 筆預定與 9 筆準備清單初始資料。前端只使用 publishable key，不使用 service role key。
 
 目前版本不要求登入，因此任何拿到網站連結的人都能新增行程。若之後需要限制只有旅伴可以編輯，再加上登入或旅程代碼即可，不需要改動現有的行程卡片結構。
 

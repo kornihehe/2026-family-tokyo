@@ -63,11 +63,6 @@ const days = [
   }
 ];
 
-const checklistGroups = [
-  ["航班與租車", ["去程 IT280／11-27 12:10 抵達", "Nissan Rent a Car 取車資訊", "新宿還車預約 11-28 20:00", "回程 IT281／12-02 11:25 起飛"]],
-  ["住宿與移動", ["第一晚住宿 Google Maps 連結", "東京市區住宿 Google Maps 連結", "駕照", "日文譯本／租車文件", "導航與行動電源"]]
-];
-
 const dayPicker = document.querySelector("#dayPicker");
 const flightInfo = document.querySelector("#flightInfo");
 const siteHeader = document.querySelector(".site-header");
@@ -88,15 +83,32 @@ const itineraryLocation = document.querySelector("#itineraryLocation");
 const itineraryDetail = document.querySelector("#itineraryDetail");
 const itineraryMapUrl = document.querySelector("#itineraryMapUrl");
 const saveItineraryButton = document.querySelector("#saveItineraryButton");
+const bookingGrid = document.querySelector("#bookingGrid");
+const addBookingButton = document.querySelector("#addBookingButton");
+const bookingDialog = document.querySelector("#bookingDialog");
+const bookingForm = document.querySelector("#bookingForm");
+const bookingDialogKicker = document.querySelector("#bookingDialogKicker");
+const bookingDialogTitle = document.querySelector("#bookingDialogTitle");
+const bookingSection = document.querySelector("#bookingSection");
+const bookingPeriod = document.querySelector("#bookingPeriod");
+const bookingTitle = document.querySelector("#bookingTitle");
+const bookingRoute = document.querySelector("#bookingRoute");
+const bookingMeta = document.querySelector("#bookingMeta");
+const bookingMapUrl = document.querySelector("#bookingMapUrl");
+const bookingSiteUrl = document.querySelector("#bookingSiteUrl");
+const saveBookingButton = document.querySelector("#saveBookingButton");
 let selectedDay = 0;
-let checkedItems = JSON.parse(localStorage.getItem("travel-journal-checklist") || "[]");
-let customChecklistItems = JSON.parse(localStorage.getItem("travel-journal-custom-checklist") || "{}");
-let deletedChecklistItems = JSON.parse(localStorage.getItem("travel-journal-deleted-checklist") || "[]");
-let itineraryOverrides = JSON.parse(localStorage.getItem("travel-journal-itinerary-overrides") || "{}");
+let checklistItemsState = [];
+let checklistGroupNames = [];
+let itineraryOverrides = {};
 const weatherCache = new Map();
 let remoteItems = [];
 let renderedTimelineItems = new Map();
 let editingItem = null;
+let bookingItemsState = [];
+let editingBookingId = null;
+let bookingSwipe = null;
+let suppressBookingClick = false;
 
 function dateForDay(day) {
   const [month, date] = day.date.split("/");
@@ -121,6 +133,234 @@ function safeMapUrl(value) {
     return "";
   }
 }
+
+function bookingItems() {
+  return bookingItemsState;
+}
+
+function normalizeBookingRow(row) {
+  return {
+    id: row.id,
+    section: row.section || "BOOKING",
+    period: row.period || "",
+    title: row.title || "未命名預定",
+    route: row.route || "",
+    meta: Array.isArray(row.meta) ? row.meta : [],
+    mapUrl: row.map_url || "",
+    siteUrl: row.site_url || "",
+    accent: Boolean(row.accent)
+  };
+}
+
+function renderBookingCard(item) {
+  const mapLink = item.mapUrl
+    ? `<a class="booking-map-icon" href="${escapeHtml(item.mapUrl)}" target="_blank" rel="noreferrer" aria-label="開啟 ${escapeHtml(item.title)} Google Maps" title="開啟 Google Maps">${icons.mapPin}</a>`
+    : "";
+  const siteLink = item.siteUrl
+    ? `<a class="site-link" href="${escapeHtml(item.siteUrl)}" target="_blank" rel="noreferrer">官方網站 ${icons.arrowUpRight}</a>`
+    : "";
+  const meta = Array.isArray(item.meta) ? item.meta.filter(Boolean).map((value) => `<span>${escapeHtml(value)}</span>`).join("") : "";
+  const route = escapeHtml(item.route || "").replace(/\n/g, "<br />");
+  return `<div class="booking-card-shell" data-booking-shell="${escapeHtml(item.id)}">
+    <button class="booking-delete" type="button" data-booking-delete="${escapeHtml(item.id)}" aria-label="刪除${escapeHtml(item.title)}">刪除</button>
+    <article class="booking-card${item.accent ? " booking-card-accent" : ""}" data-booking-id="${escapeHtml(item.id)}" tabindex="0" aria-label="編輯${escapeHtml(item.title)}">
+      <div class="booking-card-head"><span>${escapeHtml(item.section || "BOOKING")}</span><span>${escapeHtml(item.period || "")}</span></div>
+      <div class="booking-title-row"><h3>${escapeHtml(item.title)}</h3>${mapLink}</div>
+      <p class="booking-route">${route}</p>
+      <div class="booking-meta">${meta}</div>
+      ${siteLink ? `<div class="booking-links">${siteLink}</div>` : ""}
+    </article>
+  </div>`;
+}
+
+function renderBookings() {
+  bookingGrid.innerHTML = bookingItems().map(renderBookingCard).join("");
+}
+
+async function loadBookings() {
+  if (!supabaseClient) {
+    bookingItemsState = [];
+    renderBookings();
+    showToast("資料庫尚未連線");
+    return;
+  }
+  const { data, error } = await supabaseClient
+    .from("booking_items")
+    .select("*")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) {
+    bookingItemsState = [];
+    renderBookings();
+    showToast("預定資料載入失敗");
+    return;
+  }
+  bookingItemsState = (data || []).map(normalizeBookingRow);
+  renderBookings();
+}
+
+function subscribeToBookings() {
+  if (!supabaseClient) return;
+  supabaseClient
+    .channel("booking-items-sync")
+    .on("postgres_changes", { event: "*", schema: "public", table: "booking_items" }, loadBookings)
+    .subscribe();
+}
+
+function setBookingDialogMode(isEditing) {
+  bookingDialogKicker.textContent = isEditing ? "EDIT BOOKING" : "BOOKING";
+  bookingDialogTitle.textContent = isEditing ? "編輯預定" : "新增預定";
+  saveBookingButton.textContent = isEditing ? "儲存變更" : "儲存預定";
+}
+
+function openBookingDialog(id = null) {
+  const item = id ? bookingItems().find((booking) => booking.id === id) : null;
+  if (id && !item) return;
+  editingBookingId = id;
+  bookingForm.reset();
+  bookingSection.value = item?.section || "NEW BOOKING";
+  bookingPeriod.value = item?.period || "";
+  bookingTitle.value = item?.title || "";
+  bookingRoute.value = item?.route || "";
+  bookingMeta.value = item?.meta?.join("\n") || "";
+  bookingMapUrl.value = item?.mapUrl || "";
+  bookingSiteUrl.value = item?.siteUrl || "";
+  setBookingDialogMode(Boolean(item));
+  bookingDialog.showModal();
+  requestAnimationFrame(() => bookingTitle.focus());
+}
+
+function closeBookingDialog() {
+  bookingDialog.close();
+  editingBookingId = null;
+  setBookingDialogMode(false);
+}
+
+async function deleteBookingItem(id, shell) {
+  shell.classList.add("is-removing");
+  window.setTimeout(async () => {
+    const { error } = await supabaseClient.from("booking_items").delete().eq("id", id);
+    if (error) {
+      shell.classList.remove("is-removing");
+      showToast("刪除失敗，請稍後再試");
+      return;
+    }
+    bookingItemsState = bookingItemsState.filter((item) => item.id !== id);
+    renderBookings();
+    showToast("已刪除預定");
+  }, 280);
+}
+
+addBookingButton.addEventListener("click", () => openBookingDialog());
+bookingGrid.addEventListener("click", (event) => {
+  if (suppressBookingClick) {
+    event.preventDefault();
+    suppressBookingClick = false;
+    return;
+  }
+  const deleteButton = event.target.closest("[data-booking-delete]");
+  if (deleteButton) {
+    deleteBookingItem(deleteButton.dataset.bookingDelete, deleteButton.closest(".booking-card-shell"));
+    return;
+  }
+  if (event.target.closest("a")) return;
+  const card = event.target.closest(".booking-card");
+  if (!card) return;
+  const shell = card.closest(".booking-card-shell");
+  if (shell.classList.contains("is-swiped")) {
+    shell.classList.remove("is-swiped");
+    return;
+  }
+  openBookingDialog(card.dataset.bookingId);
+});
+bookingGrid.addEventListener("keydown", (event) => {
+  if (!['Enter', ' '].includes(event.key) || event.target.closest("a")) return;
+  const card = event.target.closest(".booking-card");
+  if (!card) return;
+  event.preventDefault();
+  openBookingDialog(card.dataset.bookingId);
+});
+bookingGrid.addEventListener("pointerdown", (event) => {
+  const card = event.target.closest(".booking-card");
+  if (!card || event.target.closest("a") || (event.pointerType === "mouse" && event.button !== 0)) return;
+  bookingSwipe = { card, shell: card.closest(".booking-card-shell"), pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, moved: false };
+  card.setPointerCapture?.(event.pointerId);
+});
+bookingGrid.addEventListener("pointermove", (event) => {
+  if (!bookingSwipe || event.pointerId !== bookingSwipe.pointerId) return;
+  const deltaX = event.clientX - bookingSwipe.startX;
+  const deltaY = event.clientY - bookingSwipe.startY;
+  if (Math.abs(deltaX) < 12 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+  event.preventDefault();
+  bookingSwipe.moved = true;
+  bookingSwipe.card.classList.add("is-swiping");
+  const offset = Math.max(-96, Math.min(0, deltaX));
+  bookingSwipe.card.style.transform = `translateX(${offset}px)`;
+});
+bookingGrid.addEventListener("pointerup", (event) => {
+  if (!bookingSwipe || event.pointerId !== bookingSwipe.pointerId) return;
+  if (bookingSwipe.moved) {
+    bookingSwipe.card.style.removeProperty("transform");
+    bookingSwipe.card.classList.remove("is-swiping");
+    bookingSwipe.shell.classList.toggle("is-swiped", event.clientX - bookingSwipe.startX < -52);
+    suppressBookingClick = true;
+    window.setTimeout(() => { suppressBookingClick = false; }, 450);
+  }
+  bookingSwipe = null;
+});
+bookingGrid.addEventListener("pointercancel", () => {
+  bookingSwipe?.card.style.removeProperty("transform");
+  bookingSwipe?.card.classList.remove("is-swiping");
+  bookingSwipe = null;
+});
+
+document.querySelector("#closeBookingDialog").addEventListener("click", closeBookingDialog);
+document.querySelector("#cancelBookingDialog").addEventListener("click", closeBookingDialog);
+bookingDialog.addEventListener("click", (event) => {
+  if (event.target === bookingDialog) closeBookingDialog();
+});
+bookingForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const title = bookingTitle.value.trim();
+  const mapInput = bookingMapUrl.value.trim();
+  const siteInput = bookingSiteUrl.value.trim();
+  const mapUrl = mapInput ? safeMapUrl(mapInput) : "";
+  const siteUrl = siteInput ? safeMapUrl(siteInput) : "";
+  if (!title || (mapInput && !mapUrl) || (siteInput && !siteUrl)) {
+    showToast(!title ? "請填寫預定標題" : "請貼上有效的連結");
+    return;
+  }
+  const payload = {
+    section: bookingSection.value.trim() || "BOOKING",
+    period: bookingPeriod.value.trim(),
+    title,
+    route: bookingRoute.value.trim(),
+    meta: bookingMeta.value.split("\n").map((value) => value.trim()).filter(Boolean),
+    map_url: mapUrl,
+    site_url: siteUrl
+  };
+  if (!supabaseClient) {
+    showToast("資料庫尚未連線");
+    return;
+  }
+  const isEditing = Boolean(editingBookingId);
+  saveBookingButton.disabled = true;
+  const response = isEditing
+    ? await supabaseClient.from("booking_items").update(payload).eq("id", editingBookingId).select().single()
+    : await supabaseClient.from("booking_items").insert({ ...payload, accent: false, sort_order: bookingItemsState.length * 10 + 100 }).select().single();
+  saveBookingButton.disabled = false;
+  if (response.error) {
+    showToast("儲存失敗，請稍後再試");
+    return;
+  }
+  const savedItem = normalizeBookingRow(response.data);
+  bookingItemsState = isEditing
+    ? bookingItemsState.map((item) => item.id === savedItem.id ? savedItem : item)
+    : [...bookingItemsState, savedItem];
+  renderBookings();
+  closeBookingDialog();
+  showToast(isEditing ? "預定已更新" : "預定已新增");
+});
 
 function remoteItemsForDay(day) {
   return remoteItems
@@ -263,33 +503,37 @@ async function loadWeather(day, dayIndex) {
   }
 }
 
+function normalizeChecklistRow(row) {
+  return {
+    id: row.id,
+    groupName: row.group_name,
+    label: row.label,
+    isCompleted: Boolean(row.is_completed),
+    sortOrder: row.sort_order || 100,
+    createdAt: row.created_at || ""
+  };
+}
+
+function checklistGroupsForRender() {
+  const groups = new Map();
+  [...checklistItemsState]
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.createdAt.localeCompare(b.createdAt))
+    .forEach((item) => {
+      if (!groups.has(item.groupName)) groups.set(item.groupName, []);
+      groups.get(item.groupName).push(item);
+    });
+  return [...groups.entries()];
+}
+
 function renderChecklist() {
   const checklist = document.querySelector("#checklist");
-  checklist.innerHTML = checklistGroups.map(([group, items], groupIndex) => {
-    const customItems = Array.isArray(customChecklistItems[group]) ? customChecklistItems[group] : [];
-    const visibleItems = [
-      ...items.map((label) => ({
-        label,
-        key: label.replaceAll("／", "/"),
-        custom: false
-      })),
-      ...customItems.map((item) => ({
-        label: item.label,
-        key: `custom-${groupIndex}-${item.id}`,
-        custom: true,
-        customId: item.id
-      }))
-    ].filter((item) => !deletedChecklistItems.includes(item.key));
-    const rows = visibleItems.map((item) => {
-      const isChecked = checkedItems.includes(item.key);
-      const deleteAttributes = item.custom
-        ? `data-check-group="${groupIndex}" data-check-custom-id="${escapeHtml(item.customId)}"`
-        : "";
-      return `<div class="check-item-shell" data-check-shell="${escapeHtml(item.key)}">
-        <button class="check-delete" type="button" data-check-delete="${escapeHtml(item.key)}" ${deleteAttributes} aria-label="刪除${escapeHtml(item.label)}">刪除</button>
-        <label class="check-item"><input type="checkbox" data-check="${escapeHtml(item.key)}" ${isChecked ? "checked" : ""} /><span class="check-box">${icons.check}</span><span class="check-label">${escapeHtml(item.label)}</span></label>
-      </div>`;
-    }).join("");
+  const groups = checklistGroupsForRender();
+  checklistGroupNames = groups.map(([group]) => group);
+  checklist.innerHTML = groups.map(([group, items], groupIndex) => {
+    const rows = items.map((item) => `<div class="check-item-shell" data-check-shell="${escapeHtml(item.id)}">
+      <button class="check-delete" type="button" data-check-delete="${escapeHtml(item.id)}" aria-label="刪除${escapeHtml(item.label)}">刪除</button>
+      <label class="check-item"><input type="checkbox" data-check="${escapeHtml(item.id)}" ${item.isCompleted ? "checked" : ""} /><span class="check-box">${icons.check}</span><span class="check-label">${escapeHtml(item.label)}</span></label>
+    </div>`).join("");
     return `<div class="check-group">${escapeHtml(group)}</div>${rows}
       <div class="check-add-row" data-check-add-row="${groupIndex}">
         <button class="check-add-button" type="button" data-check-add="${groupIndex}" aria-expanded="false"><span class="check-add-icon" aria-hidden="true">＋</span><span>新增項目</span></button>
@@ -303,10 +547,34 @@ function renderChecklist() {
   }).join("");
 }
 
-function saveChecklistState() {
-  localStorage.setItem("travel-journal-checklist", JSON.stringify(checkedItems));
-  localStorage.setItem("travel-journal-custom-checklist", JSON.stringify(customChecklistItems));
-  localStorage.setItem("travel-journal-deleted-checklist", JSON.stringify(deletedChecklistItems));
+async function loadChecklist() {
+  if (!supabaseClient) {
+    checklistItemsState = [];
+    renderChecklist();
+    showToast("資料庫尚未連線");
+    return;
+  }
+  const { data, error } = await supabaseClient
+    .from("checklist_items")
+    .select("*")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) {
+    checklistItemsState = [];
+    renderChecklist();
+    showToast("準備清單載入失敗");
+    return;
+  }
+  checklistItemsState = (data || []).map(normalizeChecklistRow);
+  renderChecklist();
+}
+
+function subscribeToChecklist() {
+  if (!supabaseClient) return;
+  supabaseClient
+    .channel("checklist-items-sync")
+    .on("postgres_changes", { event: "*", schema: "public", table: "checklist_items" }, loadChecklist)
+    .subscribe();
 }
 
 function closeSwipedChecklistItems(except = null) {
@@ -325,39 +593,51 @@ function toggleChecklistAddForm(groupIndex, open = true) {
   if (open) form.querySelector("input")?.focus();
 }
 
-function addChecklistItem(groupIndex, input) {
+async function addChecklistItem(groupIndex, input) {
   const label = input.value.trim();
   if (!label) {
     showToast("請輸入準備項目");
     input.focus();
     return;
   }
-  const [group] = checklistGroups[groupIndex];
-  const currentItems = Array.isArray(customChecklistItems[group]) ? customChecklistItems[group] : [];
-  const baseItems = checklistGroups[groupIndex][1].map((item) => item.replaceAll("／", "/"));
-  if ([...baseItems, ...currentItems.map((item) => item.label)].some((item) => item.toLowerCase() === label.toLowerCase())) {
+  const group = checklistGroupNames[groupIndex];
+  if (!group) return;
+  if (checklistItemsState.some((item) => item.groupName === group && item.label.toLowerCase() === label.toLowerCase())) {
     showToast("這個項目已經存在");
     input.focus();
     return;
   }
-  const id = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  customChecklistItems[group] = [...currentItems, { id, label }];
-  saveChecklistState();
+  if (!supabaseClient) {
+    showToast("資料庫尚未連線");
+    return;
+  }
+  const sortOrder = Math.max(0, ...checklistItemsState.filter((item) => item.groupName === group).map((item) => item.sortOrder)) + 10;
+  const { data, error } = await supabaseClient
+    .from("checklist_items")
+    .insert({ group_name: group, label, sort_order: sortOrder })
+    .select()
+    .single();
+  if (error) {
+    showToast("新增失敗，請稍後再試");
+    return;
+  }
+  checklistItemsState = [...checklistItemsState, normalizeChecklistRow(data)];
   renderChecklist();
   showToast("已新增準備項目");
 }
 
-function deleteChecklistItem(button) {
-  const key = button.dataset.checkDelete;
-  const groupIndex = Number(button.dataset.checkGroup);
-  const group = checklistGroups[groupIndex]?.[0];
-  if (button.dataset.checkCustomId && group) {
-    customChecklistItems[group] = (customChecklistItems[group] || []).filter((item) => item.id !== button.dataset.checkCustomId);
-  } else if (!deletedChecklistItems.includes(key)) {
-    deletedChecklistItems = [...deletedChecklistItems, key];
+async function deleteChecklistItem(button) {
+  if (!supabaseClient) {
+    showToast("資料庫尚未連線");
+    return;
   }
-  checkedItems = checkedItems.filter((item) => item !== key);
-  saveChecklistState();
+  const id = button.dataset.checkDelete;
+  const { error } = await supabaseClient.from("checklist_items").delete().eq("id", id);
+  if (error) {
+    showToast("刪除失敗，請稍後再試");
+    return;
+  }
+  checklistItemsState = checklistItemsState.filter((item) => item.id !== id);
   renderChecklist();
   showToast("已刪除準備項目");
 }
@@ -366,16 +646,27 @@ const checklist = document.querySelector("#checklist");
 let checklistSwipe = null;
 let suppressChecklistClick = false;
 let suppressChecklistChange = false;
-checklist.addEventListener("change", (event) => {
+checklist.addEventListener("change", async (event) => {
   const input = event.target.closest("input[data-check]");
   if (!input) return;
   if (suppressChecklistChange) {
     input.checked = !input.checked;
     return;
   }
-  const key = input.dataset.check;
-  checkedItems = input.checked ? [...new Set([...checkedItems, key])] : checkedItems.filter((item) => item !== key);
-  saveChecklistState();
+  const id = input.dataset.check;
+  if (!supabaseClient) {
+    input.checked = !input.checked;
+    showToast("資料庫尚未連線");
+    return;
+  }
+  const nextValue = input.checked;
+  const { data, error } = await supabaseClient.from("checklist_items").update({ is_completed: nextValue }).eq("id", id).select().single();
+  if (error) {
+    input.checked = !nextValue;
+    showToast("儲存失敗，請稍後再試");
+    return;
+  }
+  checklistItemsState = checklistItemsState.map((item) => item.id === id ? normalizeChecklistRow(data) : item);
   showToast(input.checked ? "已加入完成清單" : "已從清單移除");
 });
 checklist.addEventListener("click", (event) => {
@@ -467,6 +758,36 @@ async function loadRemoteItems() {
   }
 }
 
+function normalizeItineraryOverride(row) {
+  return {
+    time: row.time_label || "TBD",
+    type: row.type || "OPEN",
+    title: row.title || "未命名行程",
+    description: row.description || "",
+    location: row.location || "",
+    detail: row.detail || "",
+    mapUrl: safeMapUrl(row.map_url || "")
+  };
+}
+
+async function loadItineraryOverrides() {
+  if (!supabaseClient) return;
+  const { data, error } = await supabaseClient.from("itinerary_overrides").select("*");
+  if (!error) {
+    itineraryOverrides = Object.fromEntries((data || []).map((row) => [row.item_key, normalizeItineraryOverride(row)]));
+    renderDay();
+  }
+}
+
+function subscribeToItineraryData() {
+  if (!supabaseClient) return;
+  supabaseClient
+    .channel("itinerary-data-sync")
+    .on("postgres_changes", { event: "*", schema: "public", table: "itinerary_items" }, loadRemoteItems)
+    .on("postgres_changes", { event: "*", schema: "public", table: "itinerary_overrides" }, loadItineraryOverrides)
+    .subscribe();
+}
+
 function setDialogMode(isEditing) {
   itineraryDialogKicker.textContent = isEditing ? "EDIT ITINERARY" : "ITINERARY";
   itineraryDialogTitle.textContent = isEditing ? "編輯行程" : "新增行程";
@@ -549,29 +870,33 @@ itineraryForm.addEventListener("submit", async (event) => {
     map_url: mapUrl
   };
 
-  if (editingItem?.source === "fixed") {
-    itineraryOverrides[editingItem.editKey] = {
-      time: payload.time_label,
-      type: payload.type,
-      title: payload.title,
-      description: payload.description,
-      location: payload.location,
-      detail: payload.detail,
-      mapUrl: mapUrl || ""
-    };
-    localStorage.setItem("travel-journal-itinerary-overrides", JSON.stringify(itineraryOverrides));
-    renderDay();
-    closeItineraryDialog();
-    showToast("行程已更新（保存在此瀏覽器）");
-    return;
-  }
-
   if (!supabaseClient) {
     showToast("資料庫尚未連線");
     return;
   }
 
   saveItineraryButton.disabled = true;
+  if (editingItem?.source === "fixed") {
+    const { data, error } = await supabaseClient
+      .from("itinerary_overrides")
+      .upsert({
+        item_key: editingItem.editKey,
+        ...payload
+      }, { onConflict: "item_key" })
+      .select()
+      .single();
+    saveItineraryButton.disabled = false;
+    if (error) {
+      showToast("儲存失敗，請稍後再試");
+      return;
+    }
+    itineraryOverrides[editingItem.editKey] = normalizeItineraryOverride(data);
+    renderDay();
+    closeItineraryDialog();
+    showToast("行程已更新");
+    return;
+  }
+
   if (editingItem?.source === "remote") {
     const { data, error } = await supabaseClient
       .from("itinerary_items")
@@ -619,7 +944,14 @@ function switchView(view) {
 }
 
 document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => switchView(button.dataset.view)));
+renderBookings();
+loadBookings();
+subscribeToBookings();
 renderDayPicker();
 renderDay();
 renderChecklist();
 loadRemoteItems();
+loadChecklist();
+loadItineraryOverrides();
+subscribeToChecklist();
+subscribeToItineraryData();
