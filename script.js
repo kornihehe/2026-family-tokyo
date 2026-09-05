@@ -433,7 +433,7 @@ function renderDay() {
   renderedTimelineItems = new Map(timelineItems.map((item) => [item.editKey, item]));
   timeline.innerHTML = timelineItems.map((item, index) => {
     const mapUrl = safeMapUrl(item.mapUrl || "");
-    const mapLink = mapUrl ? `<a class="map-link" href="${escapeHtml(mapUrl)}" aria-label="開啟 Google Maps" title="開啟 Google Maps">${icons.mapPin}<span class="sr-only">Google Maps</span></a>` : "";
+    const mapLink = mapUrl ? `<a class="booking-map-icon timeline-map-icon" href="${escapeHtml(mapUrl)}" aria-label="開啟 Google Maps" title="開啟 Google Maps">${icons.mapPin}<span class="sr-only">Google Maps</span></a>` : "";
     const itemMeta = [item.location, item.detail].filter(Boolean).map((value) => `<span>${escapeHtml(value)}</span>`).join("");
     return `<article class="timeline-item" style="animation-delay:${index * 70}ms">
       <time class="timeline-time">${escapeHtml(item.time)}</time>
