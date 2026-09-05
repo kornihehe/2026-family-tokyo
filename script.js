@@ -5,8 +5,11 @@ const firstNightWalkUrl = "https://maps.app.goo.gl/uW5yAT3o2PX8bxLq8";
 const icons = {
   mapPin: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>',
   plane: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-5-5 18-3-8-10-5Z"></path><path d="m13 16 5-5"></path></svg>',
+  planeLanding: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 22h20"></path><path d="M3.77 10.77 2 9l2-4.5 1.1.55c.55.28.9.84.9 1.45s.35 1.17.9 1.45L8 8.5l3-6 1.05.53a2 2 0 0 1 1.09 1.52l.72 5.4a2 2 0 0 0 1.09 1.52l4.4 2.2c.42.22.78.55 1.01.96l.6 1.03c.49.88-.06 1.98-1.06 2.1l-1.18.15c-.47.06-.95-.02-1.37-.24L4.29 11.15a2 2 0 0 1-.52-.38Z"></path></svg>',
+  planeTakeoff: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 22h20"></path><path d="M6.36 17.4 4 17l-2-4 1.1-.55a2 2 0 0 1 1.8 0l.17.1a2 2 0 0 0 1.8 0L8 12 5 6l.9-.45a2 2 0 0 1 2.09.2l4.02 3a2 2 0 0 0 2.1.2l4.19-2.06a2.41 2.41 0 0 1 1.73-.17L21 7a1.4 1.4 0 0 1 .87 1.99l-.38.76c-.23.46-.6.84-1.07 1.08L7.58 17.2a2 2 0 0 1-1.22.18Z"></path></svg>',
   flightPlane: '<svg class="svg-icon flight-plane-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"></path></svg>',
   arrowUpRight: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"></path><path d="M7 7h10v10"></path></svg>',
+  trash: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="m6 7 1 14h10l1-14"></path><path d="M9 7V4h6v3"></path></svg>',
   check: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>'
 };
 const weatherIcons = {
@@ -89,7 +92,6 @@ const bookingDialog = document.querySelector("#bookingDialog");
 const bookingForm = document.querySelector("#bookingForm");
 const bookingDialogKicker = document.querySelector("#bookingDialogKicker");
 const bookingDialogTitle = document.querySelector("#bookingDialogTitle");
-const bookingSection = document.querySelector("#bookingSection");
 const bookingPeriod = document.querySelector("#bookingPeriod");
 const bookingTitle = document.querySelector("#bookingTitle");
 const bookingRoute = document.querySelector("#bookingRoute");
@@ -152,6 +154,17 @@ function normalizeBookingRow(row) {
   };
 }
 
+function bookingFlightDecoration(item) {
+  const section = String(item.section || "").toLowerCase();
+  if (section.includes("outbound") || section.includes("去程") || section.includes("抵達")) {
+    return `<span class="booking-flight-decoration booking-flight-landing" aria-hidden="true">${icons.planeLanding}</span>`;
+  }
+  if (section.includes("return") || section.includes("回程") || section.includes("起飛")) {
+    return `<span class="booking-flight-decoration booking-flight-takeoff" aria-hidden="true">${icons.planeTakeoff}</span>`;
+  }
+  return "";
+}
+
 function renderBookingCard(item) {
   const mapLink = item.mapUrl
     ? `<a class="booking-map-icon" href="${escapeHtml(item.mapUrl)}" target="_blank" rel="noreferrer" aria-label="開啟 ${escapeHtml(item.title)} Google Maps" title="開啟 Google Maps">${icons.mapPin}</a>`
@@ -162,13 +175,14 @@ function renderBookingCard(item) {
   const meta = Array.isArray(item.meta) ? item.meta.filter(Boolean).map((value) => `<span>${escapeHtml(value)}</span>`).join("") : "";
   const route = escapeHtml(item.route || "").replace(/\n/g, "<br />");
   return `<div class="booking-card-shell" data-booking-shell="${escapeHtml(item.id)}">
-    <button class="booking-delete" type="button" data-booking-delete="${escapeHtml(item.id)}" aria-label="刪除${escapeHtml(item.title)}">刪除</button>
+    <button class="booking-delete" type="button" data-booking-delete="${escapeHtml(item.id)}" aria-label="刪除${escapeHtml(item.title)}">${icons.trash}</button>
     <article class="booking-card${item.accent ? " booking-card-accent" : ""}" data-booking-id="${escapeHtml(item.id)}" tabindex="0" aria-label="編輯${escapeHtml(item.title)}">
       <div class="booking-card-head"><span>${escapeHtml(item.section || "BOOKING")}</span><span>${escapeHtml(item.period || "")}</span></div>
       <div class="booking-title-row"><h3>${escapeHtml(item.title)}</h3>${mapLink}</div>
       <p class="booking-route">${route}</p>
       <div class="booking-meta">${meta}</div>
       ${siteLink ? `<div class="booking-links">${siteLink}</div>` : ""}
+      ${bookingFlightDecoration(item)}
     </article>
   </div>`;
 }
@@ -218,7 +232,6 @@ function openBookingDialog(id = null) {
   if (id && !item) return;
   editingBookingId = id;
   bookingForm.reset();
-  bookingSection.value = item?.section || "NEW BOOKING";
   bookingPeriod.value = item?.period || "";
   bookingTitle.value = item?.title || "";
   bookingRoute.value = item?.route || "";
@@ -330,8 +343,9 @@ bookingForm.addEventListener("submit", async (event) => {
     showToast(!title ? "請填寫預定標題" : "請貼上有效的連結");
     return;
   }
+  const existingItem = editingBookingId ? bookingItems().find((booking) => booking.id === editingBookingId) : null;
   const payload = {
-    section: bookingSection.value.trim() || "BOOKING",
+    section: existingItem?.section || "NEW BOOKING",
     period: bookingPeriod.value.trim(),
     title,
     route: bookingRoute.value.trim(),
