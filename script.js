@@ -99,6 +99,11 @@ const bookingMeta = document.querySelector("#bookingMeta");
 const bookingMapUrl = document.querySelector("#bookingMapUrl");
 const bookingSiteUrl = document.querySelector("#bookingSiteUrl");
 const saveBookingButton = document.querySelector("#saveBookingButton");
+const packingAddButton = document.querySelector("#packingAddButton");
+const packingAddForm = document.querySelector("#packingAddForm");
+const packingAddGroup = document.querySelector("#packingAddGroup");
+const packingAddInput = document.querySelector("#packingAddInput");
+const packingAddCancel = document.querySelector("#packingAddCancel");
 let selectedDay = 0;
 let checklistItemsState = [];
 let checklistGroupNames = [];
@@ -539,10 +544,16 @@ function checklistGroupsForRender() {
   return [...groups.entries()];
 }
 
+function renderPackingAddGroups() {
+  packingAddGroup.innerHTML = checklistGroupNames.map((group, index) => `<option value="${index}">${escapeHtml(group)}</option>`).join("");
+  packingAddButton.disabled = checklistGroupNames.length === 0;
+}
+
 function renderChecklist() {
   const checklist = document.querySelector("#checklist");
   const groups = checklistGroupsForRender();
   checklistGroupNames = groups.map(([group]) => group);
+  renderPackingAddGroups();
   checklist.innerHTML = groups.map(([group, items], groupIndex) => {
     const rows = items.map((item) => `<div class="check-item-shell" data-check-shell="${escapeHtml(item.id)}">
       <button class="check-delete" type="button" data-check-delete="${escapeHtml(item.id)}" aria-label="刪除${escapeHtml(item.label)}">刪除</button>
@@ -612,18 +623,18 @@ async function addChecklistItem(groupIndex, input) {
   if (!label) {
     showToast("請輸入準備項目");
     input.focus();
-    return;
+    return false;
   }
   const group = checklistGroupNames[groupIndex];
-  if (!group) return;
+  if (!group) return false;
   if (checklistItemsState.some((item) => item.groupName === group && item.label.toLowerCase() === label.toLowerCase())) {
     showToast("這個項目已經存在");
     input.focus();
-    return;
+    return false;
   }
   if (!supabaseClient) {
     showToast("資料庫尚未連線");
-    return;
+    return false;
   }
   const sortOrder = Math.max(0, ...checklistItemsState.filter((item) => item.groupName === group).map((item) => item.sortOrder)) + 10;
   const { data, error } = await supabaseClient
@@ -633,11 +644,12 @@ async function addChecklistItem(groupIndex, input) {
     .single();
   if (error) {
     showToast("新增失敗，請稍後再試");
-    return;
+    return false;
   }
   checklistItemsState = [...checklistItemsState, normalizeChecklistRow(data)];
   renderChecklist();
   showToast("已新增準備項目");
+  return true;
 }
 
 async function deleteChecklistItem(button) {
@@ -660,6 +672,26 @@ const checklist = document.querySelector("#checklist");
 let checklistSwipe = null;
 let suppressChecklistClick = false;
 let suppressChecklistChange = false;
+packingAddButton.addEventListener("click", () => {
+  const isOpen = packingAddButton.getAttribute("aria-expanded") === "true";
+  packingAddForm.classList.toggle("is-open", !isOpen);
+  packingAddButton.setAttribute("aria-expanded", String(!isOpen));
+  if (!isOpen) packingAddInput.focus();
+});
+packingAddCancel.addEventListener("click", () => {
+  packingAddForm.classList.remove("is-open");
+  packingAddButton.setAttribute("aria-expanded", "false");
+  packingAddInput.value = "";
+});
+packingAddForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const added = await addChecklistItem(Number(packingAddGroup.value), packingAddInput);
+  if (added) {
+    packingAddForm.classList.remove("is-open");
+    packingAddButton.setAttribute("aria-expanded", "false");
+    packingAddInput.value = "";
+  }
+});
 checklist.addEventListener("change", async (event) => {
   const input = event.target.closest("input[data-check]");
   if (!input) return;
@@ -808,12 +840,21 @@ function setDialogMode(isEditing) {
   saveItineraryButton.textContent = isEditing ? "儲存變更" : "儲存行程";
 }
 
+function syncItineraryTypeButtons(value) {
+  document.querySelectorAll("[data-itinerary-type]").forEach((button) => {
+    const isSelected = button.dataset.itineraryType === value;
+    button.classList.toggle("is-selected", isSelected);
+    button.setAttribute("aria-checked", String(isSelected));
+  });
+}
+
 function openItineraryDialog() {
   editingItem = null;
   itineraryForm.reset();
   itineraryDate.disabled = false;
   itineraryDate.value = dateForDay(days[selectedDay]);
   itineraryType.value = "OPEN";
+  syncItineraryTypeButtons(itineraryType.value);
   setDialogMode(false);
   itineraryDialog.showModal();
   requestAnimationFrame(() => itineraryTitle.focus());
@@ -827,6 +868,7 @@ function openEditItineraryDialog(editKey) {
   itineraryDate.value = item.tripDate || dateForDay(days[selectedDay]);
   itineraryTime.value = item.time || "";
   itineraryType.value = item.type || "OPEN";
+  syncItineraryTypeButtons(itineraryType.value);
   itineraryTitle.value = item.title || "";
   itineraryDescription.value = item.description || "";
   itineraryLocation.value = item.location || "";
@@ -846,6 +888,10 @@ function closeItineraryDialog() {
 }
 
 addItineraryButton.addEventListener("click", openItineraryDialog);
+document.querySelectorAll("[data-itinerary-type]").forEach((button) => button.addEventListener("click", () => {
+  itineraryType.value = button.dataset.itineraryType;
+  syncItineraryTypeButtons(itineraryType.value);
+}));
 timeline.addEventListener("click", (event) => {
   if (event.target instanceof Element && event.target.closest("a")) return;
   const card = event.target.closest(".timeline-card");
@@ -891,12 +937,19 @@ itineraryForm.addEventListener("submit", async (event) => {
 
   saveItineraryButton.disabled = true;
   if (editingItem?.source === "fixed") {
+    const overridePayload = {
+      item_key: editingItem.editKey,
+      time_label: payload.time_label,
+      type: payload.type,
+      title: payload.title,
+      description: payload.description,
+      location: payload.location,
+      detail: payload.detail,
+      map_url: payload.map_url
+    };
     const { data, error } = await supabaseClient
       .from("itinerary_overrides")
-      .upsert({
-        item_key: editingItem.editKey,
-        ...payload
-      }, { onConflict: "item_key" })
+      .upsert(overridePayload, { onConflict: "item_key" })
       .select()
       .single();
     saveItineraryButton.disabled = false;

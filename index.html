@@ -47,6 +47,17 @@
         <div class="packing-section-heading">
           <span>PRE-DEPARTURE</span>
           <h3>行前準備</h3>
+          <div class="packing-add" id="packingAdd">
+            <button class="packing-add-button" id="packingAddButton" type="button" aria-expanded="false"><span class="check-add-icon" aria-hidden="true">＋</span>新增準備項目</button>
+            <form class="packing-add-form" id="packingAddForm">
+              <label class="sr-only" for="packingAddGroup">選擇分類</label>
+              <select id="packingAddGroup"></select>
+              <label class="sr-only" for="packingAddInput">新增準備項目</label>
+              <input id="packingAddInput" type="text" maxlength="80" placeholder="輸入準備項目" autocomplete="off" />
+              <button class="check-add-submit" type="submit">加入</button>
+              <button class="check-add-cancel" id="packingAddCancel" type="button">取消</button>
+            </form>
+          </div>
         </div>
         <div class="checklist" id="checklist"></div>
       </section>
@@ -64,32 +75,35 @@
           </button>
         </div>
         <div class="form-grid">
-          <label class="form-field">
-            <span>日期</span>
-            <select id="itineraryDate" name="trip_date" required>
-              <option value="2026-11-27">11/27 · FRI</option>
-              <option value="2026-11-28">11/28 · SAT</option>
-              <option value="2026-11-29">11/29 · SUN</option>
-              <option value="2026-11-30">11/30 · MON</option>
-              <option value="2026-12-01">12/01 · TUE</option>
-              <option value="2026-12-02">12/02 · WED</option>
-            </select>
-          </label>
-          <label class="form-field">
-            <span>時間</span>
-            <input id="itineraryTime" name="time_label" type="text" placeholder="例如 14:30 / ALL DAY" maxlength="24" />
-          </label>
-          <label class="form-field">
-            <span>類型</span>
-            <select id="itineraryType" name="type">
-              <option value="OPEN">OPEN</option>
-              <option value="SPOT">SPOT</option>
-              <option value="FOOD">FOOD</option>
-              <option value="SHOP">SHOP</option>
-              <option value="DRIVE">DRIVE</option>
-              <option value="WALK">WALK</option>
-            </select>
-          </label>
+          <div class="form-field-pair">
+            <label class="form-field">
+              <span>日期</span>
+              <select id="itineraryDate" name="trip_date" required>
+                <option value="2026-11-27">11/27 · FRI</option>
+                <option value="2026-11-28">11/28 · SAT</option>
+                <option value="2026-11-29">11/29 · SUN</option>
+                <option value="2026-11-30">11/30 · MON</option>
+                <option value="2026-12-01">12/01 · TUE</option>
+                <option value="2026-12-02">12/02 · WED</option>
+              </select>
+            </label>
+            <label class="form-field">
+              <span>時間</span>
+              <input id="itineraryTime" name="time_label" type="text" placeholder="例如 14:30 / ALL DAY" maxlength="24" />
+            </label>
+          </div>
+          <div class="form-field form-field-wide">
+            <span id="itineraryTypeLabel">類型</span>
+            <div class="itinerary-type-picker" role="radiogroup" aria-labelledby="itineraryTypeLabel">
+              <button class="itinerary-type-button is-selected" type="button" role="radio" aria-checked="true" data-itinerary-type="OPEN">OPEN</button>
+              <button class="itinerary-type-button" type="button" role="radio" aria-checked="false" data-itinerary-type="SPOT">SPOT</button>
+              <button class="itinerary-type-button" type="button" role="radio" aria-checked="false" data-itinerary-type="FOOD">FOOD</button>
+              <button class="itinerary-type-button" type="button" role="radio" aria-checked="false" data-itinerary-type="SHOP">SHOP</button>
+              <button class="itinerary-type-button" type="button" role="radio" aria-checked="false" data-itinerary-type="DRIVE">DRIVE</button>
+              <button class="itinerary-type-button" type="button" role="radio" aria-checked="false" data-itinerary-type="WALK">WALK</button>
+            </div>
+            <input id="itineraryType" name="type" type="hidden" value="OPEN" />
+          </div>
           <label class="form-field form-field-wide">
             <span>標題</span>
             <input id="itineraryTitle" name="title" type="text" placeholder="例如：東京車站" maxlength="80" required />
