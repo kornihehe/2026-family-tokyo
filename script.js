@@ -70,6 +70,7 @@ const checklistGroups = [
 
 const dayPicker = document.querySelector("#dayPicker");
 const flightInfo = document.querySelector("#flightInfo");
+const siteHeader = document.querySelector(".site-header");
 const weatherSummary = document.querySelector("#weatherSummary");
 const timeline = document.querySelector("#timeline");
 const toast = document.querySelector("#toast");
@@ -89,6 +90,8 @@ const itineraryMapUrl = document.querySelector("#itineraryMapUrl");
 const saveItineraryButton = document.querySelector("#saveItineraryButton");
 let selectedDay = 0;
 let checkedItems = JSON.parse(localStorage.getItem("travel-journal-checklist") || "[]");
+let customChecklistItems = JSON.parse(localStorage.getItem("travel-journal-custom-checklist") || "{}");
+let deletedChecklistItems = JSON.parse(localStorage.getItem("travel-journal-deleted-checklist") || "[]");
 let itineraryOverrides = JSON.parse(localStorage.getItem("travel-journal-itinerary-overrides") || "{}");
 const weatherCache = new Map();
 let remoteItems = [];
@@ -262,18 +265,186 @@ async function loadWeather(day, dayIndex) {
 
 function renderChecklist() {
   const checklist = document.querySelector("#checklist");
-  checklist.innerHTML = checklistGroups.map(([group, items]) => `<div class="check-group">${group}</div>${items.map((item) => {
-    const key = item.replaceAll("／", "/");
-    const isChecked = checkedItems.includes(key);
-    return `<label class="check-item"><input type="checkbox" data-check="${key}" ${isChecked ? "checked" : ""} /><span class="check-box">${icons.check}</span><span class="check-label">${item}</span></label>`;
-  }).join("")}`).join("");
-  checklist.querySelectorAll("[data-check]").forEach((input) => input.addEventListener("change", () => {
-    const key = input.dataset.check;
-    checkedItems = input.checked ? [...checkedItems, key] : checkedItems.filter((item) => item !== key);
-    localStorage.setItem("travel-journal-checklist", JSON.stringify(checkedItems));
-    showToast(input.checked ? "已加入完成清單" : "已從清單移除");
-  }));
+  checklist.innerHTML = checklistGroups.map(([group, items], groupIndex) => {
+    const customItems = Array.isArray(customChecklistItems[group]) ? customChecklistItems[group] : [];
+    const visibleItems = [
+      ...items.map((label) => ({
+        label,
+        key: label.replaceAll("／", "/"),
+        custom: false
+      })),
+      ...customItems.map((item) => ({
+        label: item.label,
+        key: `custom-${groupIndex}-${item.id}`,
+        custom: true,
+        customId: item.id
+      }))
+    ].filter((item) => !deletedChecklistItems.includes(item.key));
+    const rows = visibleItems.map((item) => {
+      const isChecked = checkedItems.includes(item.key);
+      const deleteAttributes = item.custom
+        ? `data-check-group="${groupIndex}" data-check-custom-id="${escapeHtml(item.customId)}"`
+        : "";
+      return `<div class="check-item-shell" data-check-shell="${escapeHtml(item.key)}">
+        <button class="check-delete" type="button" data-check-delete="${escapeHtml(item.key)}" ${deleteAttributes} aria-label="刪除${escapeHtml(item.label)}">刪除</button>
+        <label class="check-item"><input type="checkbox" data-check="${escapeHtml(item.key)}" ${isChecked ? "checked" : ""} /><span class="check-box">${icons.check}</span><span class="check-label">${escapeHtml(item.label)}</span></label>
+      </div>`;
+    }).join("");
+    return `<div class="check-group">${escapeHtml(group)}</div>${rows}
+      <div class="check-add-row" data-check-add-row="${groupIndex}">
+        <button class="check-add-button" type="button" data-check-add="${groupIndex}" aria-expanded="false"><span class="check-add-icon" aria-hidden="true">＋</span><span>新增項目</span></button>
+        <form class="check-add-form" data-check-form="${groupIndex}">
+          <label class="sr-only" for="check-add-input-${groupIndex}">新增${escapeHtml(group)}項目</label>
+          <input id="check-add-input-${groupIndex}" type="text" maxlength="80" placeholder="輸入準備項目" autocomplete="off" />
+          <button class="check-add-submit" type="submit">加入</button>
+          <button class="check-add-cancel" type="button" data-check-cancel="${groupIndex}">取消</button>
+        </form>
+      </div>`;
+  }).join("");
 }
+
+function saveChecklistState() {
+  localStorage.setItem("travel-journal-checklist", JSON.stringify(checkedItems));
+  localStorage.setItem("travel-journal-custom-checklist", JSON.stringify(customChecklistItems));
+  localStorage.setItem("travel-journal-deleted-checklist", JSON.stringify(deletedChecklistItems));
+}
+
+function closeSwipedChecklistItems(except = null) {
+  document.querySelectorAll(".check-item-shell.is-swiped").forEach((shell) => {
+    if (shell !== except) shell.classList.remove("is-swiped");
+  });
+}
+
+function toggleChecklistAddForm(groupIndex, open = true) {
+  const row = document.querySelector(`.check-add-row[data-check-add-row="${groupIndex}"]`);
+  if (!row) return;
+  const button = row.querySelector("[data-check-add]");
+  const form = row.querySelector("[data-check-form]");
+  form.classList.toggle("is-open", open);
+  button.setAttribute("aria-expanded", String(open));
+  if (open) form.querySelector("input")?.focus();
+}
+
+function addChecklistItem(groupIndex, input) {
+  const label = input.value.trim();
+  if (!label) {
+    showToast("請輸入準備項目");
+    input.focus();
+    return;
+  }
+  const [group] = checklistGroups[groupIndex];
+  const currentItems = Array.isArray(customChecklistItems[group]) ? customChecklistItems[group] : [];
+  const baseItems = checklistGroups[groupIndex][1].map((item) => item.replaceAll("／", "/"));
+  if ([...baseItems, ...currentItems.map((item) => item.label)].some((item) => item.toLowerCase() === label.toLowerCase())) {
+    showToast("這個項目已經存在");
+    input.focus();
+    return;
+  }
+  const id = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  customChecklistItems[group] = [...currentItems, { id, label }];
+  saveChecklistState();
+  renderChecklist();
+  showToast("已新增準備項目");
+}
+
+function deleteChecklistItem(button) {
+  const key = button.dataset.checkDelete;
+  const groupIndex = Number(button.dataset.checkGroup);
+  const group = checklistGroups[groupIndex]?.[0];
+  if (button.dataset.checkCustomId && group) {
+    customChecklistItems[group] = (customChecklistItems[group] || []).filter((item) => item.id !== button.dataset.checkCustomId);
+  } else if (!deletedChecklistItems.includes(key)) {
+    deletedChecklistItems = [...deletedChecklistItems, key];
+  }
+  checkedItems = checkedItems.filter((item) => item !== key);
+  saveChecklistState();
+  renderChecklist();
+  showToast("已刪除準備項目");
+}
+
+const checklist = document.querySelector("#checklist");
+let checklistSwipe = null;
+let suppressChecklistClick = false;
+let suppressChecklistChange = false;
+checklist.addEventListener("change", (event) => {
+  const input = event.target.closest("input[data-check]");
+  if (!input) return;
+  if (suppressChecklistChange) {
+    input.checked = !input.checked;
+    return;
+  }
+  const key = input.dataset.check;
+  checkedItems = input.checked ? [...new Set([...checkedItems, key])] : checkedItems.filter((item) => item !== key);
+  saveChecklistState();
+  showToast(input.checked ? "已加入完成清單" : "已從清單移除");
+});
+checklist.addEventListener("click", (event) => {
+  if (suppressChecklistClick) {
+    event.preventDefault();
+    suppressChecklistClick = false;
+    return;
+  }
+  const addButton = event.target.closest("[data-check-add]");
+  if (addButton) {
+    closeSwipedChecklistItems();
+    toggleChecklistAddForm(Number(addButton.dataset.checkAdd), addButton.getAttribute("aria-expanded") !== "true");
+    return;
+  }
+  const cancelButton = event.target.closest("[data-check-cancel]");
+  if (cancelButton) {
+    toggleChecklistAddForm(Number(cancelButton.dataset.checkCancel), false);
+    return;
+  }
+  const deleteButton = event.target.closest("[data-check-delete]");
+  if (deleteButton) {
+    deleteChecklistItem(deleteButton);
+    return;
+  }
+  if (!event.target.closest(".check-item")) closeSwipedChecklistItems();
+});
+checklist.addEventListener("submit", (event) => {
+  const form = event.target.closest("[data-check-form]");
+  if (!form) return;
+  event.preventDefault();
+  addChecklistItem(Number(form.dataset.checkForm), form.querySelector("input"));
+});
+checklist.addEventListener("pointerdown", (event) => {
+  const item = event.target.closest(".check-item");
+  if (!item || (event.pointerType === "mouse" && event.button !== 0)) return;
+  checklistSwipe = { item, shell: item.closest(".check-item-shell"), pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, moved: false };
+  item.setPointerCapture?.(event.pointerId);
+});
+checklist.addEventListener("pointermove", (event) => {
+  if (!checklistSwipe || event.pointerId !== checklistSwipe.pointerId) return;
+  const deltaX = event.clientX - checklistSwipe.startX;
+  const deltaY = event.clientY - checklistSwipe.startY;
+  if (Math.abs(deltaX) < 12 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+  event.preventDefault();
+  checklistSwipe.moved = true;
+  suppressChecklistChange = true;
+  if (deltaX < 0) {
+    closeSwipedChecklistItems(checklistSwipe.shell);
+    checklistSwipe.shell.classList.add("is-swiping", "is-swiped");
+  } else {
+    checklistSwipe.shell.classList.remove("is-swiped");
+  }
+});
+checklist.addEventListener("pointerup", (event) => {
+  if (!checklistSwipe || event.pointerId !== checklistSwipe.pointerId) return;
+  if (checklistSwipe.moved) {
+    suppressChecklistClick = true;
+    window.setTimeout(() => {
+      suppressChecklistClick = false;
+      suppressChecklistChange = false;
+    }, 450);
+  }
+  checklistSwipe.shell.classList.remove("is-swiping");
+  checklistSwipe = null;
+});
+checklist.addEventListener("pointercancel", () => {
+  checklistSwipe?.shell.classList.remove("is-swiping");
+  checklistSwipe = null;
+});
 
 function showToast(message) {
   toast.textContent = message;
@@ -443,6 +614,7 @@ itineraryForm.addEventListener("submit", async (event) => {
 function switchView(view) {
   document.querySelectorAll("[data-panel]").forEach((panel) => panel.classList.toggle("active", panel.dataset.panel === view));
   document.querySelectorAll("[data-view]").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
+  siteHeader.classList.toggle("is-hidden", view !== "itinerary");
   if (view !== "itinerary") window.scrollTo({ top: document.querySelector(`[data-panel="${view}"]`).offsetTop - 26, behavior: "smooth" });
 }
 
