@@ -18,6 +18,10 @@ const weatherIcons = {
   storm: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path><path d="m13 14-2 4h3l-2 4"></path></svg>'
 };
 
+const supabaseUrl = "https://ioihxqrnbshmltdmebyb.supabase.co";
+const supabasePublishableKey = "sb_publishable_ngy-PhrlRgozBEXUrjLG2w_tbJm_qL0";
+const supabaseClient = window.supabase?.createClient ? window.supabase.createClient(supabaseUrl, supabasePublishableKey) : null;
+
 const days = [
   {
     number: "01", date: "11/27", weekday: "FRI", title: "抵達成田・取車", subtitle: "先把方向盤握好，再往住宿出發。", flight: { airline: "TIGERAIR TAIWAN", code: "IT280", fromCode: "KHH", toCode: "NRT", from: "高雄國際機場", to: "東京成田機場", depart: "08:00", arrive: "12:10", duration: "4h10m", dateLabel: "27 Nov 2026 (FRI)", terminal: "Terminal 2" }, weather: { label: "成田", latitude: 35.772, longitude: 140.3929 }, items: [
@@ -70,9 +74,59 @@ const flightInfo = document.querySelector("#flightInfo");
 const weatherSummary = document.querySelector("#weatherSummary");
 const timeline = document.querySelector("#timeline");
 const toast = document.querySelector("#toast");
+const addItineraryButton = document.querySelector("#addItineraryButton");
+const itineraryDialog = document.querySelector("#itineraryDialog");
+const itineraryForm = document.querySelector("#itineraryForm");
+const itineraryDate = document.querySelector("#itineraryDate");
+const itineraryTime = document.querySelector("#itineraryTime");
+const itineraryType = document.querySelector("#itineraryType");
+const itineraryTitle = document.querySelector("#itineraryTitle");
+const itineraryDescription = document.querySelector("#itineraryDescription");
+const itineraryMapUrl = document.querySelector("#itineraryMapUrl");
+const saveItineraryButton = document.querySelector("#saveItineraryButton");
 let selectedDay = 0;
 let checkedItems = JSON.parse(localStorage.getItem("travel-journal-checklist") || "[]");
 const weatherCache = new Map();
+let remoteItems = [];
+
+function dateForDay(day) {
+  const [month, date] = day.date.split("/");
+  return `2026-${month.padStart(2, "0")}-${date.padStart(2, "0")}`;
+}
+
+function escapeHtml(value = "") {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  }[character]));
+}
+
+function safeMapUrl(value) {
+  try {
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) ? url.toString() : "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function remoteItemsForDay(day) {
+  return remoteItems
+    .filter((item) => item.trip_date === dateForDay(day))
+    .map((item) => ({
+      id: item.id,
+      time: item.time_label || "TBD",
+      type: item.type || "OPEN",
+      title: item.title || "未命名行程",
+      description: item.description || "",
+      location: item.location || "",
+      detail: item.detail || "",
+      mapUrl: safeMapUrl(item.map_url || "")
+    }));
+}
 
 function renderDayPicker() {
   dayPicker.innerHTML = days.map((day, index) => `
@@ -91,19 +145,19 @@ function renderDay() {
   flightInfo.innerHTML = day.flight ? `<article class="flight-card"><div class="flight-card-head"><span class="flight-airline"><strong>${day.flight.airline}</strong><b>·</b><span>${day.flight.code}</span></span></div><div class="flight-route"><div class="flight-endpoint"><strong class="flight-airport">${day.flight.fromCode}</strong><span class="flight-time">${day.flight.depart}</span></div><span class="flight-route-line" aria-hidden="true">${icons.flightPlane}${icons.routeArrow}<small>${day.flight.duration}</small></span><div class="flight-endpoint flight-arrival"><strong class="flight-airport">${day.flight.toCode}</strong><span class="flight-time">${day.flight.arrive}</span></div></div><div class="flight-card-foot"><span>${day.flight.dateLabel}</span><span>${day.flight.terminal}</span></div></article>` : "";
   weatherSummary.innerHTML = `<div class="weather-summary-inner" data-weather="${selectedDay}"><span class="weather-icon">${weatherIcons.cloud}</span><span class="weather-place">${day.weather.label}</span><strong class="weather-temp">載入中</strong><span class="weather-note">正在查詢預報</span></div>`;
   loadWeather(day, selectedDay);
-  const timelineItems = day.flight ? day.items.filter((item) => !["ARRIVE", "DEPART"].includes(item.type)) : day.items;
+  const fixedItems = day.flight ? day.items.filter((item) => !["ARRIVE", "DEPART"].includes(item.type)) : day.items;
+  const timelineItems = [...fixedItems, ...remoteItemsForDay(day)];
   timeline.innerHTML = timelineItems.map((item, index) => {
     const key = `${selectedDay}-${index}`;
-    const mapLink = item.mapUrl ? `<a class="map-link" href="${item.mapUrl}" aria-label="開啟 Google Maps" title="開啟 Google Maps">${icons.mapPin}<span class="sr-only">Google Maps</span></a>` : "";
-    const siteLink = item.siteUrl ? `<div class="location-links"><a class="site-link" href="${item.siteUrl}" target="_blank" rel="noreferrer">租車官網 ${icons.arrowUpRight}</a></div>` : "";
-    const itemMeta = [item.location, item.detail].filter(Boolean).map((value) => `<span>${value}</span>`).join("");
+    const mapUrl = safeMapUrl(item.mapUrl || "");
+    const mapLink = mapUrl ? `<a class="map-link" href="${escapeHtml(mapUrl)}" aria-label="開啟 Google Maps" title="開啟 Google Maps">${icons.mapPin}<span class="sr-only">Google Maps</span></a>` : "";
+    const itemMeta = [item.location, item.detail].filter(Boolean).map((value) => `<span>${escapeHtml(value)}</span>`).join("");
     return `<article class="timeline-item" style="animation-delay:${index * 70}ms">
-      <time class="timeline-time">${item.time}</time>
+      <time class="timeline-time">${escapeHtml(item.time)}</time>
       <div class="timeline-card" data-key="${key}">
-        <span class="item-type">${item.type}</span><div class="timeline-title-row"><h4>${item.title}</h4>${mapLink}</div>
-        <p>${item.description}</p>
+        <span class="item-type">${escapeHtml(item.type)}</span><div class="timeline-title-row"><h4>${escapeHtml(item.title)}</h4>${mapLink}</div>
+        <p>${escapeHtml(item.description)}</p>
         ${itemMeta ? `<div class="item-meta">${itemMeta}</div>` : ""}
-        ${siteLink}
       </div>
     </article>`;
   }).join("");
@@ -202,6 +256,77 @@ function showToast(message) {
   showToast.timeout = setTimeout(() => toast.classList.remove("show"), 1800);
 }
 
+async function loadRemoteItems() {
+  if (!supabaseClient) return;
+  const { data, error } = await supabaseClient
+    .from("itinerary_items")
+    .select("*")
+    .order("trip_date", { ascending: true })
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (!error && Array.isArray(data)) {
+    remoteItems = data;
+    renderDay();
+  }
+}
+
+function openItineraryDialog() {
+  itineraryForm.reset();
+  itineraryDate.value = dateForDay(days[selectedDay]);
+  itineraryType.value = "OPEN";
+  itineraryDialog.showModal();
+  requestAnimationFrame(() => itineraryTitle.focus());
+}
+
+function closeItineraryDialog() {
+  itineraryDialog.close();
+}
+
+addItineraryButton.addEventListener("click", openItineraryDialog);
+document.querySelector("#closeItineraryDialog").addEventListener("click", closeItineraryDialog);
+document.querySelector("#cancelItineraryDialog").addEventListener("click", closeItineraryDialog);
+itineraryDialog.addEventListener("click", (event) => {
+  if (event.target === itineraryDialog) closeItineraryDialog();
+});
+itineraryForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!supabaseClient) {
+    showToast("資料庫尚未連線");
+    return;
+  }
+  const title = itineraryTitle.value.trim();
+  const mapInput = itineraryMapUrl.value.trim();
+  const mapUrl = mapInput ? safeMapUrl(mapInput) : null;
+  if (!title || (mapInput && !mapUrl)) {
+    showToast(mapInput && !mapUrl ? "請貼上有效的 Google Maps 連結" : "請填寫行程標題");
+    return;
+  }
+  saveItineraryButton.disabled = true;
+  const payload = {
+    trip_date: itineraryDate.value,
+    time_label: itineraryTime.value.trim() || "TBD",
+    type: itineraryType.value,
+    title,
+    description: itineraryDescription.value.trim(),
+    location: "",
+    detail: "使用者新增",
+    map_url: mapUrl,
+    sort_order: 100
+  };
+  const { data, error } = await supabaseClient.from("itinerary_items").insert(payload).select().single();
+  saveItineraryButton.disabled = false;
+  if (error) {
+    showToast("新增失敗，請稍後再試");
+    return;
+  }
+  remoteItems = [...remoteItems, data];
+  selectedDay = days.findIndex((day) => dateForDay(day) === payload.trip_date);
+  renderDayPicker();
+  renderDay();
+  closeItineraryDialog();
+  showToast("行程已新增");
+});
+
 function switchView(view) {
   document.querySelectorAll("[data-panel]").forEach((panel) => panel.classList.toggle("active", panel.dataset.panel === view));
   document.querySelectorAll("[data-view]").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
@@ -212,3 +337,4 @@ document.querySelectorAll("[data-view]").forEach((button) => button.addEventList
 renderDayPicker();
 renderDay();
 renderChecklist();
+loadRemoteItems();

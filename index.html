@@ -23,6 +23,12 @@
     <main id="top">
       <section class="view-panel active" id="itineraryView" data-panel="itinerary">
         <div class="itinerary-layout section-pad">
+          <div class="itinerary-toolbar">
+            <button class="add-itinerary-button" id="addItineraryButton" type="button">
+              <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              新增行程
+            </button>
+          </div>
           <div class="flight-info" id="flightInfo"></div>
           <div class="timeline" id="timeline" aria-live="polite"></div>
         </div>
@@ -76,12 +82,71 @@
       </section>
     </main>
 
+    <dialog class="itinerary-dialog" id="itineraryDialog" aria-labelledby="itineraryDialogTitle">
+      <form class="itinerary-form" id="itineraryForm">
+        <div class="dialog-head">
+          <div>
+            <span class="dialog-kicker">ITINERARY</span>
+            <h2 id="itineraryDialogTitle">新增行程</h2>
+          </div>
+          <button class="dialog-close" id="closeItineraryDialog" type="button" aria-label="關閉新增行程視窗">
+            <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12"></path><path d="M18 6 6 18"></path></svg>
+          </button>
+        </div>
+        <div class="form-grid">
+          <label class="form-field">
+            <span>日期</span>
+            <select id="itineraryDate" name="trip_date" required>
+              <option value="2026-11-27">11/27 · FRI</option>
+              <option value="2026-11-28">11/28 · SAT</option>
+              <option value="2026-11-29">11/29 · SUN</option>
+              <option value="2026-11-30">11/30 · MON</option>
+              <option value="2026-12-01">12/01 · TUE</option>
+              <option value="2026-12-02">12/02 · WED</option>
+            </select>
+          </label>
+          <label class="form-field">
+            <span>時間</span>
+            <input id="itineraryTime" name="time_label" type="text" placeholder="例如 14:30 / ALL DAY" maxlength="24" />
+          </label>
+          <label class="form-field">
+            <span>類型</span>
+            <select id="itineraryType" name="type">
+              <option value="OPEN">OPEN</option>
+              <option value="SPOT">SPOT</option>
+              <option value="FOOD">FOOD</option>
+              <option value="SHOP">SHOP</option>
+              <option value="DRIVE">DRIVE</option>
+              <option value="WALK">WALK</option>
+            </select>
+          </label>
+          <label class="form-field form-field-wide">
+            <span>標題</span>
+            <input id="itineraryTitle" name="title" type="text" placeholder="例如：東京車站" maxlength="80" required />
+          </label>
+          <label class="form-field form-field-wide">
+            <span>說明</span>
+            <textarea id="itineraryDescription" name="description" rows="3" placeholder="補充集合、預約或移動資訊" maxlength="240"></textarea>
+          </label>
+          <label class="form-field form-field-wide">
+            <span>Google Maps 連結 <small>選填</small></span>
+            <input id="itineraryMapUrl" name="map_url" type="url" placeholder="貼上 Google Maps 連結" maxlength="500" />
+          </label>
+        </div>
+        <div class="dialog-actions">
+          <button class="dialog-cancel" id="cancelItineraryDialog" type="button">取消</button>
+          <button class="dialog-submit" id="saveItineraryButton" type="submit">儲存行程</button>
+        </div>
+      </form>
+    </dialog>
+
     <nav class="bottom-nav" aria-label="主要導覽">
       <button class="bottom-nav-item active" data-view="itinerary" type="button"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>行程</button>
       <button class="bottom-nav-item" data-view="booking" type="button"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"></path><path d="M8 7h8"></path><path d="M8 11h8"></path><path d="M8 15h5"></path></svg>預定</button>
       <button class="bottom-nav-item" data-view="list" type="button"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 3 3 3-3"></path><path d="M13 6h8"></path><path d="m3 12 3 3 3-3"></path><path d="M13 12h8"></path><path d="m3 18 3 3 3-3"></path><path d="M13 18h8"></path></svg>準備</button>
     </nav>
     <div class="toast" id="toast" role="status"></div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
   </body>
 </html>
