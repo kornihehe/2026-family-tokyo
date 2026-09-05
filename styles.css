@@ -30,7 +30,7 @@ h1 em, h2 em, h3 em { color: var(--blue); font-style: italic; }
 .view-panel.active { display: block; }
 .day-rail { display: block; }
 .site-header .day-picker { gap: 9px; }
-.site-header .day-button { height: 64px; padding: 9px 10px; border: 0; border-radius: 18px; background: rgba(255,255,255,.82); box-shadow: 0 4px 12px rgba(23, 59, 89, .08); }
+.site-header .day-button { height: 64px; padding: 9px 10px; border: 0; border-radius: 9px; background: rgba(255,255,255,.82); box-shadow: 0 4px 12px rgba(23, 59, 89, .08); }
 .site-header .day-button strong { margin-top: 6px; color: var(--ink); font-family: var(--body); font-size: 21px; font-weight: 700; }
 .site-header .day-button span, .site-header .day-button strong, .site-header .day-button small { text-align: center; }
 .site-header .day-button small { display: block; margin-top: 1px; color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .08em; }
@@ -43,14 +43,14 @@ h1 em, h2 em, h3 em { color: var(--blue); font-style: italic; }
 .weather-summary .weather-note { color: var(--muted); font-size: 10px; }
 .weather-summary .weather-note::before { content: "·"; margin-right: 7px; color: var(--line); }
 .day-picker { display: flex; justify-content: flex-start; gap: 9px; }
-.day-button { width: 68px; height: 84px; padding: 10px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.5); text-align: left; transition: .2s ease; }
+.day-button { width: 68px; height: 84px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.5); text-align: left; transition: .2s ease; }
 .day-button span { display: block; color: var(--muted); font-size: 9px; font-weight: 600; letter-spacing: .1em; }
 .day-button strong { display: block; margin-top: 15px; color: var(--ink); font-family: var(--body); font-size: 23px; font-weight: 700; }
 .day-button:hover, .day-button.active { color: #fff; border-color: var(--red); background: var(--red); box-shadow: 0 6px 14px rgba(228,87,46,.25); transform: none; }
 .day-button.active span, .day-button.active strong, .day-button.active small { color: rgba(255,255,255,.92); }
 .itinerary-layout { display: grid; grid-template-columns: 1fr; padding-top: 28px; padding-bottom: 90px; }
 .flight-info:empty { display: none; }
-.flight-card { margin-bottom: 18px; padding: 19px; color: #fff; border-radius: 22px; background: linear-gradient(135deg, #17466d, #347fa4); box-shadow: 0 10px 24px rgba(23, 70, 109, .2); }
+.flight-card { margin-bottom: 18px; padding: 19px; color: #fff; border-radius: 11px; background: linear-gradient(135deg, #17466d, #347fa4); box-shadow: 0 10px 24px rgba(23, 70, 109, .2); }
 .flight-card-head, .flight-card-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: rgba(255,255,255,.78); font-size: 11px; }
 .flight-card-head span:first-child { display: inline-flex; align-items: center; gap: 7px; color: #fff; font-size: 15px; font-weight: 700; }
 .flight-card-head .svg-icon { width: 20px; height: 20px; }
@@ -70,7 +70,7 @@ h1 em, h2 em, h3 em { color: var(--blue); font-style: italic; }
 .timeline-item { position: relative; display: grid; grid-template-columns: 63px 1fr; gap: 20px; padding-bottom: 26px; animation: rise .35s ease both; }
 .timeline-item::before { content: ""; position: absolute; top: 5px; left: -21px; width: 9px; height: 9px; border: 2px solid var(--paper); border-radius: 50%; background: var(--red); box-shadow: 0 0 0 1px var(--red); }
 .timeline-time { padding-top: 3px; color: var(--muted); font-size: 10px; letter-spacing: .08em; }
-.timeline-card { position: relative; min-height: 0; padding: 19px; border: 0; border-radius: 18px; background: rgba(255,255,255,.86); box-shadow: 0 6px 18px rgba(23, 59, 89, .09); transition: background .2s, transform .2s, box-shadow .2s; }
+.timeline-card { position: relative; min-height: 0; padding: 19px; border: 0; border-radius: 9px; background: rgba(255,255,255,.86); box-shadow: 0 6px 18px rgba(23, 59, 89, .09); transition: background .2s, transform .2s, box-shadow .2s; }
 .timeline-card:hover { background: #fff; box-shadow: 0 8px 22px rgba(23, 59, 89, .13); transform: translateY(-2px); }
 .item-type { display: inline-block; margin-bottom: 7px; color: var(--red); font-size: 10px; font-weight: 800; letter-spacing: .14em; }
 .timeline-title-row { display: flex; align-items: center; gap: 8px; }
@@ -79,7 +79,7 @@ h1 em, h2 em, h3 em { color: var(--blue); font-style: italic; }
 .item-meta { display: flex; gap: 13px; color: var(--muted); font-size: 10px; }
 .item-meta span + span { padding-left: 13px; border-left: 1px solid var(--line); }
 .location-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.map-link, .site-link { display: inline-flex; align-items: center; gap: 5px; min-height: 32px; padding: 6px 9px; border-radius: 10px; font-size: 10px; letter-spacing: .04em; transition: .2s ease; }
+.map-link, .site-link { display: inline-flex; align-items: center; gap: 5px; min-height: 32px; padding: 6px 9px; border-radius: 5px; font-size: 10px; letter-spacing: .04em; transition: .2s ease; }
 .map-link { justify-content: center; width: 34px; height: 34px; padding: 0; color: var(--blue); background: var(--blue-light); }
 .site-link { color: var(--blue); border: 1px solid rgba(47,127,167,.35); }
 .map-link .svg-icon, .site-link .svg-icon { width: 16px; height: 16px; }
@@ -89,7 +89,7 @@ h1 em, h2 em, h3 em { color: var(--blue); font-style: italic; }
 .booking-view, .list-view { max-width: 1100px; padding-top: 36px; padding-bottom: 120px; }
 .plain-title { margin: 0; font-family: var(--body); font-size: clamp(30px, 4vw, 42px); font-weight: 600; letter-spacing: -.04em; line-height: 1.1; }
 .booking-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 24px; }
-.booking-card { min-height: 235px; padding: 22px; border: 0; border-radius: 20px; background: rgba(255,255,255,.82); box-shadow: 0 6px 18px rgba(23, 59, 89, .09); transition: .2s ease; }
+.booking-card { min-height: 235px; padding: 22px; border: 0; border-radius: 10px; background: rgba(255,255,255,.82); box-shadow: 0 6px 18px rgba(23, 59, 89, .09); transition: .2s ease; }
 .booking-card:hover { background: #fff; box-shadow: 0 8px 22px rgba(23, 59, 89, .13); transform: translateY(-3px); }
 .booking-card-accent { color: #fff; background: linear-gradient(135deg, #17466d, #347fa4); }
 .booking-card-accent:hover { background: linear-gradient(135deg, #17466d, #347fa4); }
@@ -134,9 +134,9 @@ h1 em, h2 em, h3 em { color: var(--blue); font-style: italic; }
 @media (max-width: 780px) {
   body { padding-bottom: calc(72px + env(safe-area-inset-bottom)); overscroll-behavior-x: none; }
   .site-header { padding: 12px 22px 10px; }.brand { margin-bottom: 10px; }.site-header .day-picker { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; padding: 0; }
-  .site-header .day-button { width: auto; min-width: 0; height: 62px; padding: 7px 3px 5px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; }.site-header .day-button span { font-size: 7px; letter-spacing: .06em; white-space: nowrap; }.site-header .day-button strong { margin-top: 0; font-size: clamp(20px, 6vw, 25px); letter-spacing: -.06em; text-align: center; line-height: 1; }.site-header .day-button small { margin-top: 0; font-size: 8px; }.day-button:hover, .day-button.active { transform: translateY(-2px); }
+  .site-header .day-button { width: auto; min-width: 0; height: 62px; padding: 7px 3px 5px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; }.site-header .day-button span { font-size: 7px; letter-spacing: .06em; white-space: nowrap; }.site-header .day-button strong { margin-top: 0; font-size: clamp(20px, 6vw, 25px); letter-spacing: -.06em; text-align: center; line-height: 1; }.site-header .day-button small { margin-top: 0; font-size: 8px; }.day-button:hover, .day-button.active { transform: translateY(-2px); }
   .weather-summary { min-height: 24px; padding: 6px 0 8px; }.weather-summary-inner { gap: 6px; font-size: 10px; }.weather-summary .weather-icon .svg-icon { width: 14px; height: 14px; }.weather-summary .weather-temp { font-size: 10px; }.weather-summary .weather-note { font-size: 9px; }
-  .itinerary-layout { display: block; padding-top: 22px; padding-bottom: 72px; }.flight-card { margin-bottom: 14px; padding: 16px; border-radius: 20px; }.flight-route { gap: 8px; margin: 17px 0; }.flight-route strong { font-size: 24px; }.flight-route span:not(.flight-route-line) { font-size: 11px; }.timeline { margin-top: 18px; padding-left: 20px; }.timeline-item { grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding-bottom: 18px; }.timeline-card { min-height: 0; padding: 15px 14px; border-radius: 16px; }.timeline-card h4 { font-size: 15px; }.item-meta { flex-wrap: wrap; gap: 5px 7px; }.item-meta span + span { padding-left: 7px; }.location-links { margin-top: 10px; }.map-link { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 10px; }.site-link { min-height: 40px; padding: 8px 10px; border-radius: 8px; font-size: 9px; }
-  .booking-view, .list-view { padding-top: 24px; padding-bottom: 70px; }.booking-grid { grid-template-columns: 1fr; gap: 10px; margin-top: 18px; }.booking-card { min-height: 0; padding: 17px; border-radius: 10px; }.booking-card h3 { margin-top: 21px; font-size: 28px; }.booking-route { margin-bottom: 15px; }.booking-card .map-link, .booking-card .site-link { min-height: 40px; }
+  .itinerary-layout { display: block; padding-top: 22px; padding-bottom: 72px; }.flight-card { margin-bottom: 14px; padding: 16px; border-radius: 10px; }.flight-route { gap: 8px; margin: 17px 0; }.flight-route strong { font-size: 24px; }.flight-route span:not(.flight-route-line) { font-size: 11px; }.timeline { margin-top: 18px; padding-left: 20px; }.timeline-item { grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding-bottom: 18px; }.timeline-card { min-height: 0; padding: 15px 14px; border-radius: 8px; }.timeline-card h4 { font-size: 15px; }.item-meta { flex-wrap: wrap; gap: 5px 7px; }.item-meta span + span { padding-left: 7px; }.location-links { margin-top: 10px; }.map-link { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 5px; }.site-link { min-height: 40px; padding: 8px 10px; border-radius: 4px; font-size: 9px; }
+  .booking-view, .list-view { padding-top: 24px; padding-bottom: 70px; }.booking-grid { grid-template-columns: 1fr; gap: 10px; margin-top: 18px; }.booking-card { min-height: 0; padding: 17px; border-radius: 5px; }.booking-card h3 { margin-top: 21px; font-size: 28px; }.booking-route { margin-bottom: 15px; }.booking-card .map-link, .booking-card .site-link { min-height: 40px; }
   .check-item { min-height: 58px; }.check-box { width: 22px; height: 22px; }.footer { padding-bottom: 18px; font-size: 8px; }.bottom-nav { position: fixed; z-index: 11; right: 0; bottom: 0; left: 0; display: flex; justify-content: space-around; padding: 8px 22px calc(8px + env(safe-area-inset-bottom)); background: rgba(251,248,238,.96); border-top: 1px solid var(--line); backdrop-filter: blur(12px); }.bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 72px; min-height: 42px; color: var(--muted); background: transparent; font-size: 10px; letter-spacing: .08em; }.bottom-nav-item .svg-icon { width: 19px; height: 19px; }.bottom-nav-item.active { color: var(--red); }
 }
