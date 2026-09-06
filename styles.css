@@ -153,7 +153,7 @@ body.itinerary-background .timeline-card { background: rgba(255,255,255,.78); ba
 .check-item-shell.is-swiping .check-item { transition: none; }
 .check-item-shell.is-swiped .check-item { transform: translateX(-84px); }
 .check-delete { position: absolute; inset: 0 0 0 auto; width: 84px; color: #fff; background: var(--red); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
-.check-item input { position: absolute; opacity: 0; }
+.check-toggle input { position: absolute; opacity: 0; }
 .check-toggle { position: relative; display: grid; flex: 0 0 20px; place-items: center; width: 20px; height: 20px; cursor: pointer; }
 .check-box { display: grid; place-items: center; width: 20px; height: 20px; border: 1px solid var(--ink); color: var(--paper); transition: .2s; }
 .check-box .svg-icon { width: 13px; height: 13px; opacity: 0; }
