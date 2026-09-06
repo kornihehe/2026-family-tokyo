@@ -25,7 +25,7 @@ python3 -m http.server 4173
 
 ## 修改行程
 
-打開 `script.js` 最上方的 `days` 陣列，修改每天的日期、標題、行程與 `mapUrl` 即可。Google Maps 連結請優先使用 `https://www.google.com/maps/search/?api=1&query=...` 官方格式；這種格式可同時交給手機 App 或瀏覽器開啟。`maps.app.goo.gl` 短連結在部分 iOS WebView／PWA 情境可能顯示「不支援的連結」，因此固定行程不使用短連結。行程、預定與準備清單的異動都會同步到 Supabase，不使用 `localStorage`。
+打開 `script.js` 最上方的 `days` 陣列，修改每天的日期、標題、行程與 `mapUrl` 即可。Google Maps 連結請優先使用 `https://www.google.com/maps/search/?api=1&query=...` 官方格式；這種格式可同時交給手機 App 或瀏覽器開啟。`maps.app.goo.gl` 短連結在部分 iOS WebView／PWA 情境可能顯示「不支援的連結」，因此固定行程不使用短連結。行程、預定與準備清單的異動都會同步到 Supabase；只有暗色／亮色主題偏好會保存在目前瀏覽器的 `localStorage`，不會影響其他使用者。
 
 ## 新增行程與 Supabase
 

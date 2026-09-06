@@ -111,6 +111,8 @@ const bookingMeta = document.querySelector("#bookingMeta");
 const bookingMapUrl = document.querySelector("#bookingMapUrl");
 const bookingSiteUrl = document.querySelector("#bookingSiteUrl");
 const saveBookingButton = document.querySelector("#saveBookingButton");
+const themeToggle = document.querySelector("#themeToggle");
+const themeMeta = document.querySelector('meta[name="theme-color"]');
 let selectedDay = 0;
 let checklistItemsState = [];
 let checklistGroupNames = [];
@@ -129,6 +131,38 @@ let locationSearchController = null;
 let locationSearchSessionToken = null;
 let locationSuggestionItems = [];
 let activeLocationSuggestion = -1;
+
+const themeStorageKey = "travel-japan-theme";
+const themeColors = { light: "#fbf8ee", dark: "#090c0a" };
+
+function applyTheme(theme) {
+  const isDark = theme === "dark";
+  document.documentElement.dataset.theme = isDark ? "dark" : "light";
+  themeToggle?.setAttribute("aria-pressed", String(isDark));
+  themeToggle?.setAttribute("aria-label", isDark ? "切換亮色主題" : "切換暗色主題");
+  themeToggle?.setAttribute("title", isDark ? "切換亮色主題" : "切換暗色主題");
+  if (themeMeta) themeMeta.setAttribute("content", isDark ? themeColors.dark : themeColors.light);
+}
+
+function loadTheme() {
+  let savedTheme = "light";
+  try {
+    savedTheme = localStorage.getItem(themeStorageKey) === "dark" ? "dark" : "light";
+  } catch (error) {
+    // Keep the light theme when storage is unavailable.
+  }
+  applyTheme(savedTheme);
+}
+
+function toggleTheme() {
+  const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  applyTheme(nextTheme);
+  try {
+    localStorage.setItem(themeStorageKey, nextTheme);
+  } catch (error) {
+    // Theme switching still works for the current page when storage is unavailable.
+  }
+}
 
 function dateForDay(day) {
   const [month, date] = day.date.split("/");
@@ -1247,6 +1281,8 @@ function switchView(view) {
 }
 
 document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => switchView(button.dataset.view)));
+themeToggle?.addEventListener("click", toggleTheme);
+loadTheme();
 renderBookings();
 loadBookings();
 initializeLocationAutocomplete();

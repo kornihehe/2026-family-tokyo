@@ -4,6 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#fbf8ee" />
+    <script>
+      (() => {
+        try {
+          if (localStorage.getItem("travel-japan-theme") === "dark") {
+            document.documentElement.dataset.theme = "dark";
+            document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#090c0a");
+          }
+        } catch (error) {
+          // Theme preference is optional when storage is unavailable.
+        }
+      })();
+    </script>
     <meta name="description" content="2026黑皮東京楓葉｜2026 年 11 月 27 日至 12 月 2 日的東京、富士急互動式旅程。" />
     <meta property="og:title" content="2026黑皮東京楓葉" />
     <meta property="og:description" content="2026黑皮東京楓葉｜2026 年 11 月 27 日至 12 月 2 日的東京、富士急互動式旅程。" />
@@ -56,7 +68,13 @@
       </section>
 
       <section class="view-panel list-view section-pad" id="listView" data-panel="list">
-        <h2 class="plain-title">準備</h2>
+        <div class="list-title-row">
+          <h2 class="plain-title">準備</h2>
+          <button class="theme-toggle" id="themeToggle" type="button" aria-label="切換暗色主題" aria-pressed="false" title="切換暗色主題">
+            <svg class="svg-icon theme-icon theme-icon-moon" data-lucide="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+            <svg class="svg-icon theme-icon theme-icon-sun" data-lucide="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="m16.24 7.76 1.42-1.42"></path><path d="M20 12h2"></path><path d="m16.24 16.24 1.42 1.42"></path><path d="M12 20v2"></path><path d="m6.34 17.66-1.42 1.42"></path><path d="M2 12H4"></path><path d="m6.34 6.34-1.42-1.42"></path></svg>
+          </button>
+        </div>
         <div class="checklist" id="checklist"></div>
       </section>
     </main>
