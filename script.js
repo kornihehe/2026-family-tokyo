@@ -1,7 +1,14 @@
 const mapSearch = (query) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-const lodgingUrl = "https://maps.app.goo.gl/Ex4w6B12ANb3qAen7";
-const cityLodgingUrl = "https://maps.app.goo.gl/3XAM5BM4JGvse8Gx6";
-const firstNightWalkUrl = "https://maps.app.goo.gl/uW5yAT3o2PX8bxLq8";
+
+// Use the official Maps URL format for fixed itinerary links. Short links from
+// maps.app.goo.gl can be rejected by the Google Maps iOS app in some webview
+// and PWA contexts, while Maps search URLs work as both app deep links and
+// browser fallbacks.
+const lodgingUrl = mapSearch("Highland Resort Hotel & Spa, Fujikawaguchiko, Yamanashi, Japan");
+const cityLodgingUrl = mapSearch("Tokyu Stay Yotsuya, Tokyo, Japan");
+// Use the local Japanese name so Google Maps opens a place search result,
+// matching the behavior of the other itinerary links.
+const firstNightWalkUrl = mapSearch("河口湖もみじ回廊, 山梨県富士河口湖町");
 const icons = {
   mapPin: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>',
   plane: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-5-5 18-3-8-10-5Z"></path><path d="m13 16 5-5"></path></svg>',
@@ -127,13 +134,17 @@ function escapeHtml(value = "") {
   }[character]));
 }
 
-function safeMapUrl(value) {
+function safeExternalUrl(value) {
   try {
     const url = new URL(value);
     return ["http:", "https:"].includes(url.protocol) ? url.toString() : "";
   } catch (error) {
     return "";
   }
+}
+
+function safeMapUrl(value) {
+  return safeExternalUrl(value);
 }
 
 function bookingItems() {
@@ -148,8 +159,8 @@ function normalizeBookingRow(row) {
     title: row.title || "未命名預定",
     route: row.route || "",
     meta: Array.isArray(row.meta) ? row.meta : [],
-    mapUrl: row.map_url || "",
-    siteUrl: row.site_url || "",
+    mapUrl: safeMapUrl(row.map_url || ""),
+    siteUrl: safeExternalUrl(row.site_url || ""),
     accent: Boolean(row.accent)
   };
 }
@@ -167,10 +178,10 @@ function bookingFlightDecoration(item) {
 
 function renderBookingCard(item) {
   const mapLink = item.mapUrl
-    ? `<a class="booking-map-icon" href="${escapeHtml(item.mapUrl)}" target="_blank" rel="noreferrer" aria-label="開啟 ${escapeHtml(item.title)} Google Maps" title="開啟 Google Maps">${icons.mapPin}</a>`
+    ? `<a class="booking-map-icon" href="${escapeHtml(item.mapUrl)}" target="_blank" rel="noopener noreferrer" aria-label="開啟 ${escapeHtml(item.title)} Google Maps" title="開啟 Google Maps">${icons.mapPin}</a>`
     : "";
   const siteLink = item.siteUrl
-    ? `<a class="site-link" href="${escapeHtml(item.siteUrl)}" target="_blank" rel="noreferrer">官方網站 ${icons.arrowUpRight}</a>`
+    ? `<a class="site-link" href="${escapeHtml(item.siteUrl)}" target="_blank" rel="noopener noreferrer">官方網站 ${icons.arrowUpRight}</a>`
     : "";
   const meta = Array.isArray(item.meta) ? item.meta.filter(Boolean).map((value) => `<span>${escapeHtml(value)}</span>`).join("") : "";
   const route = escapeHtml(item.route || "").replace(/\n/g, "<br />");
@@ -338,7 +349,7 @@ bookingForm.addEventListener("submit", async (event) => {
   const mapInput = bookingMapUrl.value.trim();
   const siteInput = bookingSiteUrl.value.trim();
   const mapUrl = mapInput ? safeMapUrl(mapInput) : "";
-  const siteUrl = siteInput ? safeMapUrl(siteInput) : "";
+  const siteUrl = siteInput ? safeExternalUrl(siteInput) : "";
   if (!title || (mapInput && !mapUrl) || (siteInput && !siteUrl)) {
     showToast(!title ? "請填寫預定標題" : "請貼上有效的連結");
     return;
@@ -433,7 +444,7 @@ function renderDay() {
   renderedTimelineItems = new Map(timelineItems.map((item) => [item.editKey, item]));
   timeline.innerHTML = timelineItems.map((item, index) => {
     const mapUrl = safeMapUrl(item.mapUrl || "");
-    const mapLink = mapUrl ? `<a class="booking-map-icon timeline-map-icon" href="${escapeHtml(mapUrl)}" aria-label="開啟 Google Maps" title="開啟 Google Maps">${icons.mapPin}<span class="sr-only">Google Maps</span></a>` : "";
+    const mapLink = mapUrl ? `<a class="booking-map-icon timeline-map-icon" href="${escapeHtml(mapUrl)}" target="_blank" rel="noopener noreferrer" aria-label="開啟 Google Maps" title="開啟 Google Maps">${icons.mapPin}<span class="sr-only">Google Maps</span></a>` : "";
     const itemMeta = [item.location, item.detail].filter(Boolean).map((value) => `<span>${escapeHtml(value)}</span>`).join("");
     return `<article class="timeline-item" style="animation-delay:${index * 70}ms">
       <time class="timeline-time">${escapeHtml(item.time)}</time>
