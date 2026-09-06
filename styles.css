@@ -194,6 +194,18 @@ body.itinerary-background .timeline-card { background: rgba(255,255,255,.78); ba
 .itinerary-type-button:hover, .itinerary-type-button.is-selected { color: #fff; border-color: var(--red); background: var(--red); }
 .form-field small { color: var(--muted); font-size: 9px; font-weight: 500; }
 .form-field input, .form-field select, .form-field textarea { width: 100%; padding: 10px 11px; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; outline: 0; background: rgba(255,255,255,.76); font-size: 13px; font-weight: 500; letter-spacing: 0; }
+.location-picker { position: relative; width: 100%; }
+.location-suggestions { position: absolute; z-index: 30; top: calc(100% + 4px); right: 0; left: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); box-shadow: 0 10px 24px rgba(35,48,58,.16); }
+.location-suggestions[hidden] { display: none; }
+.location-suggestion { display: grid; width: 100%; gap: 2px; padding: 10px 11px; color: var(--ink); text-align: left; border: 0; border-bottom: 1px solid rgba(35,48,58,.08); background: transparent; cursor: pointer; }
+.location-suggestion:hover, .location-suggestion.is-active { background: rgba(47,127,167,.08); }
+.location-suggestion-main { font-size: 12px; font-weight: 700; line-height: 1.35; }
+.location-suggestion-secondary { color: var(--muted); font-size: 10px; font-weight: 500; line-height: 1.35; }
+.location-suggestions-attribution { display: flex; justify-content: flex-end; padding: 7px 10px; background: #fff; }
+.location-suggestions-attribution img { display: block; width: 84px; height: auto; }
+.location-picker-status { display: block; margin-top: 2px; color: var(--muted); font-size: 9px; font-weight: 500; line-height: 1.45; letter-spacing: 0; }
+.location-picker-status.is-ready { color: var(--blue); }
+.location-picker-status.is-error { color: var(--red); }
 .form-field textarea { resize: vertical; line-height: 1.6; }
 .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(47,127,167,.12); }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }

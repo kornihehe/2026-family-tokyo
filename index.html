@@ -112,7 +112,11 @@
           </label>
           <label class="form-field">
             <span>地點</span>
-            <input id="itineraryLocation" name="location" type="text" placeholder="例如：東京車站" maxlength="120" />
+            <div class="location-picker">
+              <input id="itineraryLocation" name="location" type="text" placeholder="例如：東京車站" maxlength="120" autocomplete="off" aria-autocomplete="list" aria-controls="itineraryLocationSuggestions" aria-expanded="false" />
+              <div class="location-suggestions" id="itineraryLocationSuggestions" role="listbox" hidden></div>
+            </div>
+            <small class="location-picker-status" id="itineraryLocationStatus">輸入至少 2 個字，可從 Google 建議中選擇；也可手動輸入。</small>
           </label>
           <label class="form-field">
             <span>備註</span>

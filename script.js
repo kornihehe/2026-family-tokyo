@@ -1,4 +1,7 @@
-const mapSearch = (query) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+const mapSearch = (query, placeId = "") => {
+  const baseUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  return placeId ? `${baseUrl}&query_place_id=${encodeURIComponent(placeId)}` : baseUrl;
+};
 
 // Use the official Maps URL format for fixed itinerary links. Short links from
 // maps.app.goo.gl can be rejected by the Google Maps iOS app in some webview
@@ -90,6 +93,8 @@ const itineraryType = document.querySelector("#itineraryType");
 const itineraryTitle = document.querySelector("#itineraryTitle");
 const itineraryDescription = document.querySelector("#itineraryDescription");
 const itineraryLocation = document.querySelector("#itineraryLocation");
+const itineraryLocationSuggestions = document.querySelector("#itineraryLocationSuggestions");
+const itineraryLocationStatus = document.querySelector("#itineraryLocationStatus");
 const itineraryDetail = document.querySelector("#itineraryDetail");
 const itineraryMapUrl = document.querySelector("#itineraryMapUrl");
 const saveItineraryButton = document.querySelector("#saveItineraryButton");
@@ -118,6 +123,12 @@ let bookingItemsState = [];
 let editingBookingId = null;
 let bookingSwipe = null;
 let suppressBookingClick = false;
+let lastLocationValue = "";
+let locationSearchTimer = null;
+let locationSearchController = null;
+let locationSearchSessionToken = null;
+let locationSuggestionItems = [];
+let activeLocationSuggestion = -1;
 
 function dateForDay(day) {
   const [month, date] = day.date.split("/");
@@ -145,6 +156,127 @@ function safeExternalUrl(value) {
 
 function safeMapUrl(value) {
   return safeExternalUrl(value);
+}
+
+function setLocationStatus(message, state = "") {
+  itineraryLocationStatus.textContent = message;
+  itineraryLocationStatus.classList.toggle("is-ready", state === "ready");
+  itineraryLocationStatus.classList.toggle("is-error", state === "error");
+}
+
+function clearItineraryMapUrl() {
+  itineraryMapUrl.value = "";
+  delete itineraryMapUrl.dataset.source;
+}
+
+function setItineraryLocationValue(value, remember = false) {
+  const nextValue = String(value || "");
+  itineraryLocation.value = nextValue;
+  if (remember) lastLocationValue = nextValue;
+}
+
+function handleLocationInput(value) {
+  const nextValue = String(value || "").trim();
+  itineraryLocation.value = nextValue;
+  if (nextValue !== lastLocationValue && itineraryMapUrl.value) clearItineraryMapUrl();
+}
+
+function createLocationSearchSessionToken() {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  const bytes = new Uint8Array(16);
+  window.crypto?.getRandomValues?.(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("") || `${Date.now()}-${Math.random()}`;
+}
+
+function hideLocationSuggestions() {
+  itineraryLocationSuggestions.replaceChildren();
+  itineraryLocationSuggestions.hidden = true;
+  itineraryLocation.setAttribute("aria-expanded", "false");
+  locationSuggestionItems = [];
+  activeLocationSuggestion = -1;
+}
+
+function updateActiveLocationSuggestion() {
+  itineraryLocationSuggestions.querySelectorAll(".location-suggestion").forEach((button, index) => {
+    const isActive = index === activeLocationSuggestion;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+  });
+}
+
+function renderLocationSuggestions(suggestions) {
+  locationSuggestionItems = Array.isArray(suggestions) ? suggestions : [];
+  activeLocationSuggestion = -1;
+  if (!locationSuggestionItems.length) {
+    hideLocationSuggestions();
+    return;
+  }
+
+  const buttons = locationSuggestionItems.map((suggestion, index) => {
+    const mainText = suggestion.mainText || suggestion.text || "";
+    const secondaryText = suggestion.secondaryText || "";
+    return `<button type="button" class="location-suggestion" role="option" data-location-index="${index}" aria-selected="false">
+      <span class="location-suggestion-main">${escapeHtml(mainText)}</span>
+      ${secondaryText ? `<span class="location-suggestion-secondary">${escapeHtml(secondaryText)}</span>` : ""}
+    </button>`;
+  }).join("");
+  itineraryLocationSuggestions.innerHTML = `${buttons}<div class="location-suggestions-attribution"><img src="https://www.gstatic.com/images/branding/googlelogo/1x/googlelogo_color_42x16dp.png" alt="Powered by Google" /></div>`;
+  itineraryLocationSuggestions.hidden = false;
+  itineraryLocation.setAttribute("aria-expanded", "true");
+}
+
+function selectLocationSuggestion(index) {
+  const suggestion = locationSuggestionItems[index];
+  if (!suggestion?.placeId) return;
+  const label = suggestion.text || suggestion.mainText || itineraryLocation.value.trim();
+  setItineraryLocationValue(label, true);
+  itineraryMapUrl.value = mapSearch(label, suggestion.placeId);
+  itineraryMapUrl.dataset.source = "google-place";
+  setLocationStatus("已選擇 Google 地點，儲存時會帶入精確地圖連結。", "ready");
+  locationSearchSessionToken = null;
+  if (locationSearchController) locationSearchController.abort();
+  hideLocationSuggestions();
+}
+
+async function fetchLocationSuggestions(value) {
+  const input = String(value || "").trim();
+  if (input.length < 2) {
+    if (locationSearchController) locationSearchController.abort();
+    hideLocationSuggestions();
+    setLocationStatus("輸入至少 2 個字，可從 Google 建議中選擇；也可手動輸入。");
+    return;
+  }
+
+  if (!locationSearchSessionToken) locationSearchSessionToken = createLocationSearchSessionToken();
+  if (locationSearchController) locationSearchController.abort();
+  locationSearchController = new AbortController();
+  setLocationStatus("正在搜尋 Google 地點…");
+
+  try {
+    const response = await fetch("/api/places-autocomplete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ input, sessionToken: locationSearchSessionToken }),
+      signal: locationSearchController.signal
+    });
+    if (!response.ok) throw new Error("Place search failed");
+    const data = await response.json();
+    renderLocationSuggestions(data.suggestions);
+    setLocationStatus(locationSuggestionItems.length ? "請選擇 Google 建議地點。" : "找不到符合的地點，仍可手動輸入。", locationSuggestionItems.length ? "ready" : "");
+  } catch (error) {
+    if (error.name === "AbortError") return;
+    hideLocationSuggestions();
+    setLocationStatus("Google 地點搜尋暫時無法使用，仍可手動輸入。", "error");
+  }
+}
+
+function scheduleLocationSearch(value) {
+  window.clearTimeout(locationSearchTimer);
+  locationSearchTimer = window.setTimeout(() => fetchLocationSuggestions(value), 300);
+}
+
+function initializeLocationAutocomplete() {
+  setLocationStatus("輸入至少 2 個字，可從 Google 建議中選擇；也可手動輸入。");
 }
 
 function bookingItems() {
@@ -919,6 +1051,9 @@ function syncItineraryTypeButtons(value) {
 function openItineraryDialog() {
   editingItem = null;
   itineraryForm.reset();
+  hideLocationSuggestions();
+  setItineraryLocationValue("");
+  lastLocationValue = "";
   itineraryDate.disabled = false;
   itineraryDate.value = dateForDay(days[selectedDay]);
   itineraryType.value = "OPEN";
@@ -933,13 +1068,14 @@ function openEditItineraryDialog(editKey) {
   if (!item) return;
   editingItem = { source: item.source, id: item.id, editKey: item.editKey };
   itineraryForm.reset();
+  hideLocationSuggestions();
   itineraryDate.value = item.tripDate || dateForDay(days[selectedDay]);
   itineraryTime.value = item.time || "";
   itineraryType.value = item.type || "OPEN";
   syncItineraryTypeButtons(itineraryType.value);
   itineraryTitle.value = item.title || "";
   itineraryDescription.value = item.description || "";
-  itineraryLocation.value = item.location || "";
+  setItineraryLocationValue(item.location || "", true);
   itineraryDetail.value = item.detail || "";
   itineraryMapUrl.value = item.mapUrl || "";
   itineraryDate.disabled = item.source === "fixed";
@@ -949,6 +1085,7 @@ function openEditItineraryDialog(editKey) {
 }
 
 function closeItineraryDialog() {
+  hideLocationSuggestions();
   itineraryDialog.close();
   editingItem = null;
   itineraryDate.disabled = false;
@@ -1071,6 +1208,36 @@ itineraryForm.addEventListener("submit", async (event) => {
   showToast("行程已新增");
 });
 
+itineraryLocation.addEventListener("input", () => {
+  handleLocationInput(itineraryLocation.value);
+  scheduleLocationSearch(itineraryLocation.value);
+});
+itineraryLocation.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    hideLocationSuggestions();
+    return;
+  }
+  if (!locationSuggestionItems.length) return;
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    event.preventDefault();
+    const direction = event.key === "ArrowDown" ? 1 : -1;
+    activeLocationSuggestion = (activeLocationSuggestion + direction + locationSuggestionItems.length) % locationSuggestionItems.length;
+    updateActiveLocationSuggestion();
+  } else if (event.key === "Enter" && activeLocationSuggestion >= 0) {
+    event.preventDefault();
+    selectLocationSuggestion(activeLocationSuggestion);
+  }
+});
+itineraryLocationSuggestions.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-location-index]");
+  if (!button) return;
+  selectLocationSuggestion(Number(button.dataset.locationIndex));
+});
+document.addEventListener("click", (event) => {
+  if (event.target instanceof Node && !event.target.closest(".location-picker")) hideLocationSuggestions();
+});
+itineraryMapUrl.addEventListener("input", () => delete itineraryMapUrl.dataset.source);
+
 function switchView(view) {
   document.querySelectorAll("[data-panel]").forEach((panel) => panel.classList.toggle("active", panel.dataset.panel === view));
   document.querySelectorAll("[data-view]").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
@@ -1082,6 +1249,7 @@ function switchView(view) {
 document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => switchView(button.dataset.view)));
 renderBookings();
 loadBookings();
+initializeLocationAutocomplete();
 subscribeToBookings();
 renderDayPicker();
 renderDay();

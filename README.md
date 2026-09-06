@@ -21,7 +21,7 @@ python3 -m http.server 4173
 
 ## 發布到 Vercel
 
-將此資料夾匯入 Vercel 即可，Framework Preset 選 **Other**，Build Command 留空，Output Directory 設為 `.`。
+將此資料夾匯入 Vercel 即可，Framework Preset 選 **Other**，Build Command 留空，Output Directory 設為 `.`。Vercel 會自動部署 `api/` 下的 Serverless Functions。
 
 ## 修改行程
 
@@ -40,3 +40,14 @@ python3 -m http.server 4173
 ## Google Maps
 
 Google Maps 連結使用官方 Maps URL。手機點擊時會優先交給已安裝的 Google Maps App；如果沒有安裝，則會在瀏覽器開啟相同地點。
+
+新增／編輯行程的「地點」欄位支援 Google Places Autocomplete：輸入文字後可選擇 Google 建議，選取後會自動填入精確的 Google Maps 連結。
+
+Google API Key 的安全設定：
+
+1. 在 Vercel Project Settings → Environment Variables 新增 `GOOGLE_MAPS_API_KEY`，值直接貼入 Vercel，不要貼進 `script.js`、HTML、README 或聊天訊息。
+2. 重新部署後，前端會透過同源 `/api/places-autocomplete` 呼叫 Google Places API；金鑰只存在 Vercel Serverless Function 的環境變數中。
+3. 可選擇新增 `APP_ORIGIN`，填入正式網站網址，例如 `https://travel-japan-alpha.vercel.app`，讓 API 只接受指定來源。
+4. GitHub Pages 沒有這個 Serverless Function，因此只會保留手動輸入；需要 Google 地點建議時請使用 Vercel 部署。
+
+目前不需要把 API Key 放在瀏覽器端。若舊金鑰曾經提交到公開 repository 或在其他地方公開，請先在 Google Cloud 予以撤銷並建立新金鑰，再只放入 Vercel Environment Variables。Vercel 的 Preview、Development、Production 環境要使用哪一個，依實際部署需求勾選。
