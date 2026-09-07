@@ -237,6 +237,67 @@ body.itinerary-background .timeline-card { background: rgba(255,255,255,.78); ba
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes appear { from { opacity: 0; } to { opacity: 1; } }
 @keyframes booking-card-remove { to { opacity: 0; transform: translateX(-26px) scale(.98); } }
+.tax-refund-view { max-width: 1100px; padding-top: 38px; padding-bottom: 130px; }
+.tax-hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 30px; align-items: stretch; }
+.tax-hero-copy { display: flex; flex-direction: column; justify-content: center; padding: 18px 0; }
+.tax-eyebrow, .tax-card-kicker, .tax-section-heading > span, .tax-sources > span { color: var(--red); font-size: 9px; font-weight: 800; letter-spacing: .16em; }
+.tax-hero h1 { max-width: 570px; margin: 13px 0 18px; font-family: var(--body); font-size: clamp(40px, 6vw, 72px); font-weight: 800; letter-spacing: -.08em; line-height: 1.12; }
+.tax-hero h1 em { color: var(--red); font-style: normal; }
+.tax-lead { max-width: 580px; margin: 0; color: var(--muted); font-size: 14px; line-height: 2; }
+.tax-pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+.tax-pill-row span { padding: 7px 10px; color: var(--blue); border: 1px solid rgba(47,127,167,.25); border-radius: 999px; background: var(--blue-light); font-size: 10px; font-weight: 700; }
+.tax-hero-media, .tax-airport-photo { margin: 0; overflow: hidden; border-radius: 11px; background: var(--paper-deep); box-shadow: 0 10px 24px rgba(23,59,89,.12); }
+.tax-hero-media img { display: block; width: 100%; height: 100%; min-height: 320px; object-fit: cover; }
+.tax-hero-media figcaption, .tax-airport-photo figcaption { padding: 9px 12px; color: var(--muted); background: var(--paper); font-size: 9px; line-height: 1.5; }
+.tax-hero-media a, .tax-airport-photo a, .tax-sources a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
+.tax-notice { display: flex; gap: 14px; margin-top: 28px; padding: 18px 20px; color: var(--ink); border-left: 3px solid var(--red); background: rgba(228,87,46,.08); }
+.tax-notice-mark { display: grid; flex: none; place-items: center; width: 24px; height: 24px; color: #fff; border-radius: 50%; background: var(--red); font-size: 14px; font-weight: 800; }
+.tax-notice strong { display: block; margin-bottom: 3px; font-size: 13px; }
+.tax-notice p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.8; }
+.tax-section, .tax-airport-section, .tax-faq-section { margin-top: 68px; }
+.tax-section-heading { margin-bottom: 20px; }
+.tax-section-heading h2 { margin: 7px 0 0; font-family: var(--body); font-size: clamp(26px, 4vw, 38px); font-weight: 700; letter-spacing: -.06em; line-height: 1.2; }
+.tax-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
+.tax-step { min-height: 255px; padding: 22px 20px 19px; border-top: 3px solid var(--red); background: rgba(255,255,255,.75); box-shadow: 0 6px 18px rgba(23,59,89,.07); }
+.tax-step-number { display: block; margin-bottom: 28px; color: var(--red); font-family: "DM Sans", sans-serif; font-size: 29px; font-weight: 700; letter-spacing: -.06em; }
+.tax-step h3 { margin: 0 0 9px; font-size: 20px; font-weight: 700; }
+.tax-step p { margin: 0 0 17px; color: var(--muted); font-size: 11px; line-height: 1.85; }
+.tax-step small { display: block; padding-top: 11px; color: var(--blue); border-top: 1px solid var(--line); font-size: 10px; font-weight: 700; line-height: 1.5; }
+.tax-info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; margin-top: 13px; }
+.tax-card { padding: 25px 23px; border-radius: 8px; background: rgba(255,255,255,.77); box-shadow: 0 6px 18px rgba(23,59,89,.07); }
+.tax-card h2 { margin: 9px 0 20px; font-size: 23px; font-weight: 700; letter-spacing: -.05em; }
+.tax-card-blue { color: #fff; background: linear-gradient(135deg, #17466d, #347fa4); box-shadow: 0 10px 24px rgba(23,70,109,.2); }
+.tax-card-blue .tax-card-kicker { color: var(--yellow); }
+.tax-check-list { display: grid; gap: 13px; margin: 0; padding: 0; list-style: none; }
+.tax-check-list li { display: grid; grid-template-columns: 22px 1fr; gap: 9px; align-items: start; }
+.tax-check-list li > span { display: grid; place-items: center; width: 19px; height: 19px; color: #fff; border-radius: 50%; background: var(--teal); font-size: 11px; font-weight: 800; }
+.tax-check-list strong { display: block; margin-bottom: 2px; font-size: 12px; }
+.tax-check-list p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.7; }
+.tax-carry-note { display: flex; gap: 12px; padding: 15px; border: 1px solid rgba(255,255,255,.24); background: rgba(255,255,255,.08); }
+.tax-carry-note p { margin: 0; color: rgba(255,255,255,.8); font-size: 11px; line-height: 1.8; }
+.tax-carry-icon { color: var(--yellow); font-size: 22px; line-height: 1; }
+.tax-mini-rule { display: flex; gap: 11px; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,.2); font-size: 10px; line-height: 1.6; }
+.tax-mini-rule b { flex: none; color: var(--yellow); font-size: 10px; }
+.tax-mini-rule span { color: rgba(255,255,255,.7); }
+.tax-airport-layout { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 24px; align-items: center; }
+.tax-airport-photo img { display: block; width: 100%; height: 330px; object-fit: cover; }
+.tax-airport-copy { padding: 4px 0; }
+.tax-airport-lead { margin: 0 0 25px; color: var(--muted); font-size: 13px; line-height: 1.9; }
+.tax-airport-lead strong { color: var(--red); }
+.tax-airport-label { margin: 0 0 10px; color: var(--ink); font-size: 10px; font-weight: 800; letter-spacing: .06em; }
+.airport-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+.airport-tags span { padding: 8px 9px; color: var(--blue); border: 1px solid rgba(47,127,167,.3); border-radius: 4px; background: var(--blue-light); font-size: 10px; font-weight: 700; }
+.tax-airport-footnote { margin: 22px 0 0; padding-top: 15px; color: var(--muted); border-top: 1px solid var(--line); font-size: 10px; line-height: 1.8; }
+.tax-faq-list { border-top: 1px solid var(--line); }
+.tax-faq-list details { border-bottom: 1px solid var(--line); }
+.tax-faq-list summary { display: flex; justify-content: space-between; gap: 18px; padding: 16px 0; color: var(--ink); font-size: 12px; font-weight: 700; cursor: pointer; list-style: none; }
+.tax-faq-list summary::-webkit-details-marker { display: none; }
+.tax-faq-list summary::after { content: "+"; color: var(--red); font-family: "DM Sans", sans-serif; font-size: 18px; font-weight: 400; line-height: 1; }
+.tax-faq-list details[open] summary::after { content: "−"; }
+.tax-faq-list details p { max-width: 700px; margin: -2px 0 16px; color: var(--muted); font-size: 11px; line-height: 1.85; }
+.tax-sources { display: grid; grid-template-columns: auto 1fr; gap: 14px; margin-top: 63px; padding-top: 17px; border-top: 1px solid var(--line); }
+.tax-sources p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.8; }
+.tax-sources a { margin-left: 12px; white-space: nowrap; }
 @media (max-width: 780px) {
   body { padding-bottom: calc(72px + env(safe-area-inset-bottom)); overscroll-behavior-x: none; }
   .site-header { padding: 12px 22px 10px; }.brand { margin-bottom: 10px; }.site-header .day-picker { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; padding: 0; }
@@ -245,7 +306,8 @@ body.itinerary-background .timeline-card { background: rgba(255,255,255,.78); ba
   .itinerary-layout { display: block; padding-top: 22px; padding-bottom: 72px; }.itinerary-toolbar { right: 20px; bottom: calc(72px + env(safe-area-inset-bottom) + 16px); }.add-itinerary-button { width: 50px; height: 50px; min-height: 50px; }.add-itinerary-button .svg-icon { width: 22px; height: 22px; }.flight-card { margin-bottom: 14px; padding: 16px; border-radius: 10px; }.flight-airline { font-size: 11px; }.flight-route { gap: 8px; margin: 24px 0 18px; }.flight-route strong { font-size: 24px; }.flight-route span:not(.flight-route-line) { font-size: 11px; }.flight-time { font-size: 14px !important; }.flight-route-line small { font-size: 9px; }.timeline { margin-top: 18px; padding-left: 20px; }.timeline-item { grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding-bottom: 18px; }.timeline-card { min-height: 0; padding: 15px 14px; border-radius: 8px; }.timeline-card h4 { font-size: 15px; }.timeline-title-row { padding-right: 42px; }.timeline-card > .timeline-title-row .timeline-map-icon { top: 15px; right: 14px; }.item-meta { flex-wrap: wrap; gap: 5px 7px; }.item-meta span + span { padding-left: 7px; }.location-links { margin-top: 10px; }.map-link { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 5px; }.site-link { min-height: 40px; padding: 8px 10px; border-radius: 4px; font-size: 9px; }
   .itinerary-dialog { width: calc(100% - 24px); border-radius: 5px; }.itinerary-form { padding: 18px; }.dialog-head h2 { font-size: 22px; }.form-grid { grid-template-columns: 1fr; gap: 11px; }.form-field-pair { grid-column: auto; gap: 11px; }.form-field-wide { grid-column: auto; }.form-field input, .form-field select, .form-field textarea, .check-add-form input { font-size: 16px; }.itinerary-type-picker { gap: 4px; }.itinerary-type-button { padding: 7px 3px; font-size: 8px; }.dialog-actions { margin-top: 18px; }.dialog-cancel, .dialog-submit { flex: 1; }
   .booking-view, .list-view { padding-top: 24px; padding-bottom: 70px; }.booking-grid { grid-template-columns: 1fr; gap: 10px; margin-top: 18px; }.booking-card-shell { border-radius: 5px; }.booking-card { min-height: 0; padding: 17px; border-radius: 5px; }.booking-title-row { margin-top: 21px; }.booking-card h3 { font-size: 28px; }.booking-route { margin-bottom: 15px; }.booking-map-icon .svg-icon { width: 20px; height: 20px; }.booking-flight-decoration { right: 17px; bottom: 34px; }.booking-flight-decoration .svg-icon { width: 68px; height: 68px; }.booking-card .site-link { min-height: 40px; }.booking-add-wrap { margin-top: 18px; }
-  .check-item { min-height: 58px; }.check-edit-input { font-size: 16px; }.check-box { width: 22px; height: 22px; }.bottom-nav { position: fixed; z-index: 11; right: 0; bottom: 0; left: 0; display: flex; justify-content: space-around; padding: 8px 22px calc(8px + env(safe-area-inset-bottom)); background: rgba(251,248,238,.96); border-top: 1px solid var(--line); backdrop-filter: blur(12px); }.bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 72px; min-height: 42px; color: var(--muted); background: transparent; font-size: 10px; letter-spacing: .08em; }.bottom-nav-item .svg-icon { width: 19px; height: 19px; }.bottom-nav-item.active { color: var(--red); }
+  .check-item { min-height: 58px; }.check-edit-input { font-size: 16px; }.check-box { width: 22px; height: 22px; }.bottom-nav { position: fixed; z-index: 11; right: 0; bottom: 0; left: 0; display: flex; justify-content: space-around; padding: 8px 22px calc(8px + env(safe-area-inset-bottom)); background: rgba(251,248,238,.96); border-top: 1px solid var(--line); backdrop-filter: blur(12px); }.bottom-nav-item { display: flex; flex: 1 1 0; flex-direction: column; align-items: center; gap: 3px; min-width: 0; min-height: 42px; color: var(--muted); background: transparent; font-size: 10px; letter-spacing: .08em; }.bottom-nav-item .svg-icon { width: 19px; height: 19px; }.bottom-nav-item.active { color: var(--red); }
+  .tax-refund-view { padding-top: 24px; padding-bottom: 78px; }.tax-hero { display: flex; flex-direction: column; gap: 19px; }.tax-hero-copy { padding: 0; }.tax-hero h1 { margin: 11px 0 14px; font-size: clamp(37px, 11vw, 56px); }.tax-lead { font-size: 12px; line-height: 1.9; }.tax-pill-row { gap: 6px; margin-top: 17px; }.tax-pill-row span { padding: 6px 8px; font-size: 9px; }.tax-hero-media img { min-height: 210px; max-height: 270px; }.tax-hero-media, .tax-airport-photo { border-radius: 8px; }.tax-notice { gap: 10px; margin-top: 19px; padding: 14px; }.tax-notice p { font-size: 10px; line-height: 1.7; }.tax-section, .tax-airport-section, .tax-faq-section { margin-top: 47px; }.tax-section-heading { margin-bottom: 15px; }.tax-section-heading h2 { font-size: 28px; }.tax-steps, .tax-info-grid { grid-template-columns: 1fr; gap: 10px; }.tax-step { min-height: 0; padding: 17px 15px; }.tax-step-number { margin-bottom: 18px; font-size: 25px; }.tax-step h3 { font-size: 18px; }.tax-step p { font-size: 10px; line-height: 1.75; }.tax-step small { padding-top: 9px; font-size: 9px; }.tax-info-grid { margin-top: 10px; }.tax-card { padding: 19px 16px; border-radius: 6px; }.tax-card h2 { margin: 8px 0 16px; font-size: 21px; }.tax-check-list { gap: 11px; }.tax-check-list p { font-size: 9px; }.tax-airport-layout { grid-template-columns: 1fr; gap: 18px; }.tax-airport-photo img { height: 220px; }.tax-airport-lead { margin-bottom: 18px; font-size: 11px; }.tax-airport-footnote { margin-top: 17px; padding-top: 12px; font-size: 9px; }.airport-tags span { padding: 7px 8px; font-size: 9px; }.tax-sources { display: block; margin-top: 45px; }.tax-sources p { margin-top: 8px; font-size: 9px; }.tax-sources a { display: inline-block; margin: 4px 10px 0 0; }
 }
 
 html[data-theme="dark"] body {
@@ -297,3 +359,9 @@ html[data-theme="dark"] .location-suggestions { background: #0d150f; box-shadow:
 html[data-theme="dark"] .location-suggestions-attribution { background: #111811; }
 html[data-theme="dark"] .location-suggestion:hover,
 html[data-theme="dark"] .location-suggestion.is-active { background: rgba(126,255,63,.12); }
+html[data-theme="dark"] .tax-step,
+html[data-theme="dark"] .tax-card { background: rgba(17,26,19,.86); box-shadow: 0 7px 20px rgba(0,0,0,.28); }
+html[data-theme="dark"] .tax-card-blue { color: #efffeb; background: linear-gradient(135deg, #102515, #1f5a27); }
+html[data-theme="dark"] .tax-hero-media figcaption,
+html[data-theme="dark"] .tax-airport-photo figcaption { background: #111811; }
+html[data-theme="dark"] .tax-notice { background: rgba(126,255,63,.08); }
