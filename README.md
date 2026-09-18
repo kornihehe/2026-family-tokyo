@@ -1,10 +1,12 @@
-# 2026黑皮東京楓葉
+# 2026 家庭東京旅遊
 
-一個手機優先的互動式旅遊行程網站，記錄 2026/11/27–12/02 的成田、富士急與東京旅程。使用純 HTML／CSS／JavaScript 製作，不需要安裝任何套件。
+一個手機優先的互動式旅遊行程網站，記錄 2026/11/27–12/02 的成田、富士急與東京旅程。頁面只保留「行程」與「退稅」兩個 tab，並提供適合長輩使用的字體大小調整。使用純 HTML／CSS／JavaScript 製作，不需要安裝任何套件。
 
 ## 本機預覽
 
-直接用瀏覽器開啟 `index.html` 即可；若要測試天氣預報與完整互動功能，建議用任何靜態伺服器預覽，例如：
+Windows 使用者直接雙擊 `preview.cmd` 即可；它會使用 Windows 內建元件啟動本機預覽並自動開啟瀏覽器，不需要另外安裝 Python 或 npm。預覽視窗保持開啟即可，關閉視窗就會停止服務。
+
+macOS／Linux 或習慣使用終端機時，也可以用任何靜態伺服器預覽，例如：
 
 ```bash
 python3 -m http.server 4173
@@ -12,26 +14,22 @@ python3 -m http.server 4173
 
 接著開啟 <http://localhost:4173>。
 
-## 發布到 GitHub Pages（kornihehe）
+## 發布到 GitHub（kornihehe）
 
-1. 登入 GitHub 的 `kornihehe` 帳號，建立一個新的 repository，例如 `travel-japan`。
-2. 把本資料夾內的 `index.html`、`styles.css`、`script.js`、`README.md` 上傳到 repository 根目錄。
-3. 到 repository 的 **Settings → Pages**，將 Source 設為 **Deploy from a branch**，選 `main`／`/(root)`。
-4. 儲存後，網站網址會是 `https://kornihehe.github.io/travel-japan/`。
+1. 登入 GitHub 的 `kornihehe` 帳號，建立 `2026-family-tokyo` repository。
+2. 將本資料夾推送到 repository 的 `main` branch。
 
 ## 發布到 Vercel
 
-將此資料夾匯入 Vercel 即可，Framework Preset 選 **Other**，Build Command 留空，Output Directory 設為 `.`。Vercel 會自動部署 `api/` 下的 Serverless Functions。
+將 GitHub repository 匯入 Vercel 即可，Framework Preset 選 **Other**，Build Command 留空，Output Directory 設為 `.`。
 
 ## 修改行程
 
-打開 `script.js` 最上方的 `days` 陣列，修改每天的日期、標題、行程與 `mapUrl` 即可。Google Maps 連結請優先使用 `https://www.google.com/maps/search/?api=1&query=...` 官方格式；這種格式可同時交給手機 App 或瀏覽器開啟。`maps.app.goo.gl` 短連結在部分 iOS WebView／PWA 情境可能顯示「不支援的連結」，因此固定行程不使用短連結。行程、預定與準備清單的異動都會同步到 Supabase；只有暗色／亮色主題偏好會保存在目前瀏覽器的 `localStorage`，不會影響其他使用者。
+打開 `script.js` 最上方的 `days` 陣列，修改每天的日期、標題、行程與 `mapUrl` 即可。Google Maps 連結請優先使用 `https://www.google.com/maps/search/?api=1&query=...` 官方格式；這種格式可同時交給手機 App 或瀏覽器開啟。`maps.app.goo.gl` 短連結在部分 iOS WebView／PWA 情境可能顯示「不支援的連結」，因此固定行程不使用短連結。新增／編輯的行程與字體大小偏好會保存在目前瀏覽器的 `localStorage`，不需要 Supabase。
 
-## 新增行程與 Supabase
+## 本機資料
 
-頁面上的「新增行程」會寫入 Supabase 的 `public.itinerary_items`，預定、準備清單與固定行程編輯則分別使用 `booking_items`、`checklist_items`、`itinerary_overrides`。這些資料表都已開啟對匿名使用者的 CRUD RLS policy 與 Realtime；目前已在本專案 Supabase 建立完成，並已建立 5 筆預定與 9 筆準備清單初始資料。前端只使用 publishable key，不使用 service role key。
-
-目前版本不要求登入，因此任何拿到網站連結的人都能新增行程。若之後需要限制只有旅伴可以編輯，再加上登入或旅程代碼即可，不需要改動現有的行程卡片結構。
+目前版本不要求登入；新增／編輯行程與字體大小都只儲存在使用者自己的瀏覽器。清除網站資料會一併清除這些本機異動。
 
 ## 天氣預報
 

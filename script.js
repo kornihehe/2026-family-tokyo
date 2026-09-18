@@ -30,9 +30,11 @@ const weatherIcons = {
   storm: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path><path d="m13 14-2 4h3l-2 4"></path></svg>'
 };
 
-const supabaseUrl = "https://ioihxqrnbshmltdmebyb.supabase.co";
-const supabasePublishableKey = "sb_publishable_ngy-PhrlRgozBEXUrjLG2w_tbJm_qL0";
-const supabaseClient = window.supabase?.createClient ? window.supabase.createClient(supabaseUrl, supabasePublishableKey) : null;
+// This trip page is intentionally frontend-only for now. It keeps editable
+// itinerary data in localStorage so no Supabase connection is required.
+const supabaseClient = null;
+const localItineraryStorageKey = "2026-family-tokyo-itinerary";
+const localOverridesStorageKey = "2026-family-tokyo-itinerary-overrides";
 
 const days = [
   {
@@ -152,6 +154,50 @@ function loadTheme() {
     // Keep the light theme when storage is unavailable.
   }
   applyTheme(savedTheme);
+}
+
+function readLocalJson(key, fallback) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || "null");
+    return value ?? fallback;
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function writeLocalJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    showToast("瀏覽器未允許儲存資料");
+    return false;
+  }
+}
+
+const fontScaleStorageKey = "2026-family-tokyo-font-scale";
+const fontScales = [1, 1.15, 1.3];
+let fontScaleIndex = 0;
+
+function applyFontScale(index) {
+  fontScaleIndex = Math.max(0, Math.min(fontScales.length - 1, index));
+  document.documentElement.style.setProperty("--font-scale", String(fontScales[fontScaleIndex]));
+  document.documentElement.dataset.fontScale = String(fontScaleIndex);
+  document.querySelector("#fontSizeDecrease")?.toggleAttribute("disabled", fontScaleIndex === 0);
+  document.querySelector("#fontSizeIncrease")?.toggleAttribute("disabled", fontScaleIndex === fontScales.length - 1);
+}
+
+function loadFontScale() {
+  const saved = Number.parseInt(localStorage.getItem(fontScaleStorageKey) || "0", 10);
+  applyFontScale(Number.isFinite(saved) ? saved : 0);
+}
+
+function saveFontScale() {
+  try {
+    localStorage.setItem(fontScaleStorageKey, String(fontScaleIndex));
+  } catch (error) {
+    // The control still works for this visit when storage is unavailable.
+  }
 }
 
 function toggleTheme() {
@@ -372,7 +418,6 @@ async function loadBookings() {
   if (!supabaseClient) {
     bookingItemsState = [];
     renderBookings();
-    showToast("資料庫尚未連線");
     return;
   }
   const { data, error } = await supabaseClient
@@ -745,7 +790,6 @@ async function loadChecklist() {
   if (!supabaseClient) {
     checklistItemsState = [];
     renderChecklist();
-    showToast("資料庫尚未連線");
     return;
   }
   const { data, error } = await supabaseClient
@@ -1025,17 +1069,9 @@ function showToast(message) {
 }
 
 async function loadRemoteItems() {
-  if (!supabaseClient) return;
-  const { data, error } = await supabaseClient
-    .from("itinerary_items")
-    .select("*")
-    .order("trip_date", { ascending: true })
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
-  if (!error && Array.isArray(data)) {
-    remoteItems = data;
-    renderDay();
-  }
+  remoteItems = readLocalJson(localItineraryStorageKey, []);
+  if (!Array.isArray(remoteItems)) remoteItems = [];
+  renderDay();
 }
 
 function normalizeItineraryOverride(row) {
@@ -1051,21 +1087,15 @@ function normalizeItineraryOverride(row) {
 }
 
 async function loadItineraryOverrides() {
-  if (!supabaseClient) return;
-  const { data, error } = await supabaseClient.from("itinerary_overrides").select("*");
-  if (!error) {
-    itineraryOverrides = Object.fromEntries((data || []).map((row) => [row.item_key, normalizeItineraryOverride(row)]));
-    renderDay();
+  itineraryOverrides = readLocalJson(localOverridesStorageKey, {});
+  if (!itineraryOverrides || typeof itineraryOverrides !== "object" || Array.isArray(itineraryOverrides)) {
+    itineraryOverrides = {};
   }
+  renderDay();
 }
 
 function subscribeToItineraryData() {
-  if (!supabaseClient) return;
-  supabaseClient
-    .channel("itinerary-data-sync")
-    .on("postgres_changes", { event: "*", schema: "public", table: "itinerary_items" }, loadRemoteItems)
-    .on("postgres_changes", { event: "*", schema: "public", table: "itinerary_overrides" }, loadItineraryOverrides)
-    .subscribe();
+  // Data is local to this browser until a backend is added later.
 }
 
 function setDialogMode(isEditing) {
@@ -1149,7 +1179,7 @@ document.querySelector("#cancelItineraryDialog").addEventListener("click", close
 itineraryDialog.addEventListener("click", (event) => {
   if (event.target === itineraryDialog) closeItineraryDialog();
 });
-itineraryForm.addEventListener("submit", async (event) => {
+itineraryForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const title = itineraryTitle.value.trim();
   const mapInput = itineraryMapUrl.value.trim();
@@ -1169,34 +1199,22 @@ itineraryForm.addEventListener("submit", async (event) => {
     map_url: mapUrl
   };
 
-  if (!supabaseClient) {
-    showToast("資料庫尚未連線");
-    return;
-  }
-
   saveItineraryButton.disabled = true;
   if (editingItem?.source === "fixed") {
-    const overridePayload = {
-      item_key: editingItem.editKey,
-      time_label: payload.time_label,
+    itineraryOverrides[editingItem.editKey] = {
+      time: payload.time_label,
       type: payload.type,
       title: payload.title,
       description: payload.description,
       location: payload.location,
       detail: payload.detail,
-      map_url: payload.map_url
+      mapUrl: payload.map_url || ""
     };
-    const { data, error } = await supabaseClient
-      .from("itinerary_overrides")
-      .upsert(overridePayload, { onConflict: "item_key" })
-      .select()
-      .single();
+    const saved = writeLocalJson(localOverridesStorageKey, itineraryOverrides);
     saveItineraryButton.disabled = false;
-    if (error) {
-      showToast("儲存失敗，請稍後再試");
+    if (!saved) {
       return;
     }
-    itineraryOverrides[editingItem.editKey] = normalizeItineraryOverride(data);
     renderDay();
     closeItineraryDialog();
     showToast("行程已更新");
@@ -1204,19 +1222,13 @@ itineraryForm.addEventListener("submit", async (event) => {
   }
 
   if (editingItem?.source === "remote") {
-    const { data, error } = await supabaseClient
-      .from("itinerary_items")
-      .update(payload)
-      .eq("id", editingItem.id)
-      .select()
-      .single();
+    remoteItems = remoteItems.map((item) => item.id === editingItem.id ? { ...item, ...payload } : item);
+    const saved = writeLocalJson(localItineraryStorageKey, remoteItems);
     saveItineraryButton.disabled = false;
-    if (error) {
-      showToast("儲存失敗，請稍後再試");
+    if (!saved) {
       return;
     }
-    remoteItems = remoteItems.map((item) => item.id === data.id ? data : item);
-    selectedDay = Math.max(0, days.findIndex((day) => dateForDay(day) === data.trip_date));
+    selectedDay = Math.max(0, days.findIndex((day) => dateForDay(day) === payload.trip_date));
     renderDayPicker();
     renderDay();
     closeItineraryDialog();
@@ -1224,18 +1236,19 @@ itineraryForm.addEventListener("submit", async (event) => {
     return;
   }
 
-  const { data, error } = await supabaseClient
-    .from("itinerary_items")
-    .insert({ ...payload, sort_order: 100 })
-    .select()
-    .single();
+  const newItem = {
+    id: `local-${Date.now()}`,
+    ...payload,
+    sort_order: remoteItems.length * 10 + 100
+  };
+  const nextItems = [...remoteItems, newItem];
+  const saved = writeLocalJson(localItineraryStorageKey, nextItems);
   saveItineraryButton.disabled = false;
-  if (error) {
-    showToast("新增失敗，請稍後再試");
+  if (!saved) {
     return;
   }
-  remoteItems = [...remoteItems, data];
-  selectedDay = Math.max(0, days.findIndex((day) => dateForDay(day) === data.trip_date));
+  remoteItems = nextItems;
+  selectedDay = Math.max(0, days.findIndex((day) => dateForDay(day) === newItem.trip_date));
   renderDayPicker();
   renderDay();
   closeItineraryDialog();
@@ -1280,9 +1293,25 @@ function switchView(view) {
   if (view !== "itinerary") window.scrollTo({ top: document.querySelector(`[data-panel="${view}"]`).offsetTop - 26, behavior: "smooth" });
 }
 
+const initialView = new URLSearchParams(window.location.search).get("view");
+if (initialView && document.querySelector(`[data-panel="${initialView}"]`)) switchView(initialView);
+
 document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => switchView(button.dataset.view)));
 themeToggle?.addEventListener("click", toggleTheme);
+document.querySelector("#fontSizeDecrease")?.addEventListener("click", () => {
+  applyFontScale(fontScaleIndex - 1);
+  saveFontScale();
+});
+document.querySelector("#fontSizeReset")?.addEventListener("click", () => {
+  applyFontScale(0);
+  saveFontScale();
+});
+document.querySelector("#fontSizeIncrease")?.addEventListener("click", () => {
+  applyFontScale(fontScaleIndex + 1);
+  saveFontScale();
+});
 loadTheme();
+loadFontScale();
 renderBookings();
 loadBookings();
 initializeLocationAutocomplete();

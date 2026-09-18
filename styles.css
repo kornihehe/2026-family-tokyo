@@ -11,6 +11,7 @@
   --yellow: #f0b34c;
   --display: "Noto Sans TC", "DM Sans", sans-serif;
   --body: "Noto Sans TC", "DM Sans", sans-serif;
+  --font-scale: 1;
 }
 
 html[data-theme="dark"] {
@@ -29,7 +30,7 @@ html[data-theme="dark"] {
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; background: var(--paper); }
-body { margin: 0; background-color: var(--paper); background-image: radial-gradient(rgba(23, 59, 89, .1) 1px, transparent 1px); background-size: 26px 26px; color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6; }
+body { width: calc(100% / var(--font-scale)); margin: 0; background-color: var(--paper); background-image: radial-gradient(rgba(23, 59, 89, .1) 1px, transparent 1px); background-size: 26px 26px; color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6; zoom: var(--font-scale); }
 body.itinerary-background { position: relative; isolation: isolate; background-color: #eaf0f1; background-image: none; }
 body.itinerary-background::before { content: ""; position: fixed; z-index: -1; inset: 0; background: linear-gradient(rgba(251,248,238,.34), rgba(251,248,238,.34)), url("assets/itinerary-bg-fuji-maple.png") center / cover no-repeat; }
 button, a { color: inherit; font: inherit; }
@@ -38,9 +39,15 @@ a { text-decoration: none; }
 .svg-icon { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 .grain { position: fixed; inset: 0; pointer-events: none; z-index: 10; opacity: .035; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E"); }
 .section-pad { padding-left: clamp(22px, 5vw, 84px); padding-right: clamp(22px, 5vw, 84px); }
-.site-header { position: sticky; top: 0; z-index: 12; padding: 16px clamp(22px, 5vw, 84px) 14px; display: flex; flex-direction: column; align-items: stretch; background: rgba(251,248,238,.94); border-bottom: 1px solid var(--line); box-shadow: 0 4px 16px rgba(23, 59, 89, .08); backdrop-filter: blur(12px); }
+.site-header { position: sticky; top: 0; z-index: 12; padding: 16px clamp(22px, 5vw, 84px) 14px; padding-right: max(190px, clamp(22px, 5vw, 84px)); display: flex; flex-direction: column; align-items: stretch; background: rgba(251,248,238,.94); border-bottom: 1px solid var(--line); box-shadow: 0 4px 16px rgba(23, 59, 89, .08); backdrop-filter: blur(12px); }
 body.itinerary-background .site-header { background: rgba(251,248,238,.78); backdrop-filter: blur(14px); }
 .site-header.is-hidden { display: none; }
+.font-size-control { position: fixed; z-index: 20; top: 12px; right: clamp(22px, 5vw, 84px); display: inline-flex; align-items: center; gap: 4px; padding: 5px; color: var(--ink); border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.88); box-shadow: 0 5px 15px rgba(23,59,89,.12); backdrop-filter: blur(12px); }
+.font-size-label { padding: 0 4px 0 7px; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .08em; }
+.font-size-control button { min-width: 31px; min-height: 28px; padding: 3px 6px; color: var(--ink); border: 1px solid transparent; border-radius: 999px; background: transparent; font-size: 11px; font-weight: 700; }
+.font-size-control button:hover:not(:disabled), .font-size-control button:focus-visible { color: var(--red); border-color: var(--red); outline: none; }
+.font-size-control button:disabled { cursor: not-allowed; opacity: .35; }
+#bookingView, #listView { display: none !important; }
 .brand { display: inline-flex; align-items: center; align-self: flex-start; margin-bottom: 13px; color: var(--teal); font-size: 24px; font-weight: 800; letter-spacing: .02em; }
 h1, h2, h3, p { margin-top: 0; }
 h1 em, h2 em, h3 em { color: var(--blue); font-style: italic; }
@@ -67,7 +74,7 @@ h1 em, h2 em, h3 em { color: var(--blue); font-style: italic; }
 .day-button:hover, .day-button.active { color: #fff; border-color: var(--red); background: var(--red); box-shadow: 0 6px 14px rgba(228,87,46,.25); transform: none; }
 .day-button.active span, .day-button.active strong, .day-button.active small { color: rgba(255,255,255,.92); }
 .itinerary-layout { display: grid; grid-template-columns: 1fr; padding-top: 28px; padding-bottom: 90px; }
-.itinerary-toolbar { position: fixed; z-index: 10; right: clamp(22px, 5vw, 84px); bottom: 28px; }
+.itinerary-toolbar { position: fixed; z-index: 10; right: clamp(22px, 5vw, 84px); bottom: 92px; }
 .add-itinerary-button { display: grid; place-items: center; width: 54px; height: 54px; min-height: 54px; padding: 0; color: #fff; border: 0; border-radius: 50%; background: var(--red); box-shadow: 0 10px 24px rgba(228,87,46,.28); font-size: 0; transition: transform .2s ease, box-shadow .2s ease, background .2s ease; }
 .add-itinerary-button .svg-icon { width: 24px; height: 24px; stroke-width: 2.2; }
 .add-itinerary-button:hover { color: #fff; background: #d64a25; box-shadow: 0 14px 28px rgba(228,87,46,.36); transform: translateY(-4px) scale(1.04); }
@@ -195,7 +202,11 @@ body.itinerary-background .timeline-card { background: rgba(255,255,255,.78); ba
 .check-add-submit, .check-add-cancel { min-height: 34px; padding: 6px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; }
 .check-add-submit { color: #fff; background: var(--red); }
 .check-add-cancel { color: var(--muted); border: 1px solid var(--line); background: transparent; }
-.bottom-nav { display: none; }
+.bottom-nav { position: fixed; z-index: 11; right: 0; bottom: 0; left: 0; display: flex; justify-content: center; gap: 14px; padding: 10px 22px calc(10px + env(safe-area-inset-bottom)); background: rgba(251,248,238,.96); border-top: 1px solid var(--line); backdrop-filter: blur(12px); }
+.bottom-nav-item { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 120px; min-height: 38px; padding: 6px 18px; color: var(--muted); border-radius: 999px; background: transparent; font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+.bottom-nav-item .svg-icon { width: 18px; height: 18px; }
+.bottom-nav-item:hover, .bottom-nav-item:focus-visible { color: var(--red); background: var(--blue-light); outline: none; }
+.bottom-nav-item.active { color: var(--red); background: rgba(228,87,46,.1); }
 .toast { position: fixed; z-index: 20; right: 24px; bottom: 24px; padding: 12px 17px; color: var(--paper); background: var(--ink); font-size: 11px; opacity: 0; pointer-events: none; transform: translateY(10px); transition: .25s; }.toast.show { opacity: 1; transform: translateY(0); }
 .itinerary-dialog { width: min(calc(100% - 32px), 520px); padding: 0; color: var(--ink); border: 0; border-radius: 7px; background: var(--paper); box-shadow: 0 18px 48px rgba(23,59,89,.24); }
 .itinerary-dialog::backdrop { background: rgba(23,59,89,.35); backdrop-filter: blur(3px); }
@@ -300,7 +311,7 @@ body.itinerary-background .timeline-card { background: rgba(255,255,255,.78); ba
 .tax-sources a { margin-left: 12px; white-space: nowrap; }
 @media (max-width: 780px) {
   body { padding-bottom: calc(72px + env(safe-area-inset-bottom)); overscroll-behavior-x: none; }
-  .site-header { padding: 12px 22px 10px; }.brand { margin-bottom: 10px; }.site-header .day-picker { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; padding: 0; }
+  .site-header { padding: 64px 22px 10px; }.font-size-control { top: 12px; right: 22px; }.brand { margin-bottom: 10px; }.site-header .day-picker { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; padding: 0; }
   .site-header .day-button { width: auto; min-width: 0; height: 62px; padding: 7px 3px 5px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; }.site-header .day-button span { font-size: 7px; letter-spacing: .06em; white-space: nowrap; }.site-header .day-button strong { margin-top: 0; font-size: clamp(20px, 6vw, 25px); letter-spacing: -.06em; text-align: center; line-height: 1; }.site-header .day-button small { margin-top: 0; font-size: 8px; }.day-button:hover, .day-button.active { transform: translateY(-2px); }
   .weather-summary { min-height: 24px; padding: 6px 0 8px; }.weather-summary-inner { gap: 6px; font-size: 10px; }.weather-summary .weather-icon .svg-icon { width: 14px; height: 14px; }.weather-summary .weather-temp { font-size: 10px; }.weather-summary .weather-note { font-size: 9px; }
   .itinerary-layout { display: block; padding-top: 22px; padding-bottom: 72px; }.itinerary-toolbar { right: 20px; bottom: calc(72px + env(safe-area-inset-bottom) + 16px); }.add-itinerary-button { width: 50px; height: 50px; min-height: 50px; }.add-itinerary-button .svg-icon { width: 22px; height: 22px; }.flight-card { margin-bottom: 14px; padding: 16px; border-radius: 10px; }.flight-airline { font-size: 11px; }.flight-route { gap: 8px; margin: 24px 0 18px; }.flight-route strong { font-size: 24px; }.flight-route span:not(.flight-route-line) { font-size: 11px; }.flight-time { font-size: 14px !important; }.flight-route-line small { font-size: 9px; }.timeline { margin-top: 18px; padding-left: 20px; }.timeline-item { grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding-bottom: 18px; }.timeline-card { min-height: 0; padding: 15px 14px; border-radius: 8px; }.timeline-card h4 { font-size: 15px; }.timeline-title-row { padding-right: 42px; }.timeline-card > .timeline-title-row .timeline-map-icon { top: 15px; right: 14px; }.item-meta { flex-wrap: wrap; gap: 5px 7px; }.item-meta span + span { padding-left: 7px; }.location-links { margin-top: 10px; }.map-link { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 5px; }.site-link { min-height: 40px; padding: 8px 10px; border-radius: 4px; font-size: 9px; }
@@ -316,6 +327,7 @@ html[data-theme="dark"] body {
 html[data-theme="dark"] body.itinerary-background { background-color: #070a08; }
 html[data-theme="dark"] body.itinerary-background::before { background: linear-gradient(rgba(5,10,7,.78), rgba(5,10,7,.78)), url("assets/itinerary-bg-fuji-maple.png") center / cover no-repeat; }
 html[data-theme="dark"] .site-header { background: rgba(9,12,10,.94); box-shadow: 0 4px 18px rgba(0,0,0,.3); }
+html[data-theme="dark"] .font-size-control { background: rgba(16,25,18,.94); box-shadow: 0 5px 15px rgba(0,0,0,.3); }
 html[data-theme="dark"] body.itinerary-background .site-header { background: rgba(9,12,10,.82); }
 html[data-theme="dark"] .site-header .day-button { background: rgba(21,31,23,.9); box-shadow: 0 4px 12px rgba(0,0,0,.24); }
 html[data-theme="dark"] .day-button { background: rgba(17,26,19,.82); }
