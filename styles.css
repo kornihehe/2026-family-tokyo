@@ -61,14 +61,6 @@ h1 em, h2 em, h3 em { color: var(--blue); font-style: italic; }
 .site-header .day-button span, .site-header .day-button strong, .site-header .day-button small { text-align: center; }
 .site-header .day-button span { font-size: 9px; }
 .site-header .day-button small { display: block; margin-top: 1px; color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .08em; }
-.weather-summary { min-height: 26px; padding: 8px 0 9px; color: var(--muted); }
-.weather-summary-inner { display: flex; align-items: center; gap: 7px; font-size: calc(11px * var(--font-scale)); }
-.weather-summary .weather-icon { color: var(--teal); }
-.weather-summary .weather-icon .svg-icon { width: 15px; height: 15px; }
-.weather-place { font-weight: 700; }
-.weather-summary .weather-temp { color: var(--ink); font-size: calc(11px * var(--font-scale)); font-weight: 700; }
-.weather-summary .weather-note { color: var(--muted); font-size: calc(10px * var(--font-scale)); }
-.weather-summary .weather-note::before { content: "·"; margin-right: 7px; color: var(--line); }
 .day-picker { display: flex; justify-content: flex-start; gap: 9px; }
 .day-button { width: 68px; height: 84px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.5); text-align: left; transition: .2s ease; }
 .day-button span { display: block; color: var(--muted); font-size: calc(9px * var(--font-scale)); font-weight: 600; letter-spacing: .1em; }
@@ -97,8 +89,6 @@ h1 em, h2 em, h3 em { color: var(--blue); font-style: italic; }
 .flight-route-line .flight-plane-icon { width: 23px; height: 23px; transform: rotate(45deg); }
 .flight-route-line small { color: rgba(255,255,255,.7); font-size: calc(10px * var(--font-scale)); white-space: nowrap; }
 .flight-card-foot { padding-top: 12px; border-top: 1px solid rgba(255,255,255,.2); }
-.weather-icon { display: inline-flex; }
-.weather-icon .svg-icon { width: 24px; height: 24px; }
 .timeline { position: relative; padding-left: 28px; }
 .timeline::before { content: ""; position: absolute; top: 4px; bottom: 24px; left: 5px; width: 1px; background: var(--line); }
 .timeline-item { position: relative; display: grid; grid-template-columns: 63px 1fr; gap: 20px; padding-bottom: 26px; animation: rise .35s ease both; }
@@ -315,7 +305,6 @@ body.itinerary-background .timeline-card { background: rgba(255,255,255,.78); ba
   body { padding-bottom: calc(72px + env(safe-area-inset-bottom)); overscroll-behavior-x: none; }
   .site-header { padding: 12px 22px 10px; }.brand { margin-bottom: 10px; }.site-header .day-picker { display: flex; flex-wrap: nowrap; gap: 5px; padding: 0; }
   .site-header .day-button { width: clamp(52px, 12vw, 68px); min-width: 0; flex: 0 0 clamp(52px, 12vw, 68px); height: 62px; padding: 7px 3px 5px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; }.site-header .day-button span { font-size: 7px; letter-spacing: .06em; white-space: nowrap; }.site-header .day-button strong { margin-top: 0; font-size: clamp(20px, 6vw, 25px); letter-spacing: -.06em; text-align: center; line-height: 1; }.site-header .day-button small { margin-top: 0; font-size: 8px; }.day-button:hover, .day-button.active { transform: translateY(-2px); }
-  .weather-summary { min-height: 24px; padding: 6px 0 8px; }.weather-summary-inner { gap: 6px; font-size: calc(10px * var(--font-scale)); }.weather-summary .weather-icon .svg-icon { width: 14px; height: 14px; }.weather-summary .weather-temp { font-size: calc(10px * var(--font-scale)); }.weather-summary .weather-note { font-size: calc(9px * var(--font-scale)); }
   .itinerary-layout { display: block; padding-top: 22px; padding-bottom: 72px; }.itinerary-toolbar { right: 20px; bottom: calc(72px + env(safe-area-inset-bottom) + 16px); }.add-itinerary-button { width: 50px; height: 50px; min-height: 50px; }.add-itinerary-button .svg-icon { width: 22px; height: 22px; }.flight-card { margin-bottom: 14px; padding: 16px; border-radius: 10px; }.flight-airline { font-size: calc(11px * var(--font-scale)); }.flight-route { gap: 8px; margin: 24px 0 18px; }.flight-route strong { font-size: calc(24px * var(--font-scale)); }.flight-route span:not(.flight-route-line) { font-size: calc(11px * var(--font-scale)); }.flight-time { font-size: calc(14px * var(--font-scale)) !important; }.flight-route-line small { font-size: calc(9px * var(--font-scale)); }.timeline { margin-top: 18px; padding-left: 20px; }.timeline-item { grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding-bottom: 18px; }.timeline-card { min-height: 0; padding: 15px 14px; border-radius: 8px; }.timeline-card h4 { font-size: calc(15px * var(--font-scale)); }.timeline-title-row { padding-right: 42px; }.timeline-card > .timeline-title-row .timeline-map-icon { top: 15px; right: 14px; }.item-meta { flex-wrap: wrap; gap: 5px 7px; }.item-meta span + span { padding-left: 7px; }.location-links { margin-top: 10px; }.map-link { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 5px; }.site-link { min-height: 40px; padding: 8px 10px; border-radius: 4px; font-size: calc(9px * var(--font-scale)); }
   .itinerary-dialog { width: calc(100% - 24px); border-radius: 5px; }.itinerary-form { padding: 18px; }.dialog-head h2 { font-size: calc(22px * var(--font-scale)); }.form-grid { grid-template-columns: 1fr; gap: 11px; }.form-field-pair { grid-column: auto; gap: 11px; }.form-field-wide { grid-column: auto; }.form-field input, .form-field select, .form-field textarea, .check-add-form input { font-size: calc(16px * var(--font-scale)); }.itinerary-type-picker { gap: 4px; }.itinerary-type-button { padding: 7px 3px; font-size: calc(8px * var(--font-scale)); }.dialog-actions { margin-top: 18px; }.dialog-cancel, .dialog-submit { flex: 1; }
   .booking-view, .list-view { padding-top: 24px; padding-bottom: 70px; }.booking-grid { grid-template-columns: 1fr; gap: 10px; margin-top: 18px; }.booking-card-shell { border-radius: 5px; }.booking-card { min-height: 0; padding: 17px; border-radius: 5px; }.booking-title-row { margin-top: 21px; }.booking-card h3 { font-size: calc(28px * var(--font-scale)); }.booking-route { margin-bottom: 15px; }.booking-map-icon .svg-icon { width: 20px; height: 20px; }.booking-flight-decoration { right: 17px; bottom: 34px; }.booking-flight-decoration .svg-icon { width: 68px; height: 68px; }.booking-card .site-link { min-height: 40px; }.booking-add-wrap { margin-top: 18px; }
@@ -404,16 +393,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
     flex: 0 0 auto;
     line-height: 1;
   }
-  .weather-summary {
-    min-height: 48px;
-  }
-  .weather-summary-inner {
-    align-items: flex-start;
-  }
-  .weather-summary .weather-note {
-    flex-basis: 100%;
-    margin-left: 21px;
-  }
   .itinerary-layout { width: 100%; overflow: hidden; }
   .flight-info,
   .flight-card,
@@ -432,14 +411,11 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .timeline-card p { overflow-wrap: anywhere; }
   .flight-card-foot { flex-wrap: wrap; }
   .timeline-title-row { min-width: 0; }
-  .weather-summary-inner { min-width: 0; flex-wrap: wrap; }
 }
 @media (max-width: 560px) {
   .site-header { padding-left: 16px; padding-right: 16px; }
   .itinerary-layout.section-pad { padding-left: 16px; padding-right: 16px; }
   .site-header .day-picker { gap: 4px; }
-  .weather-summary { min-height: 42px; }
-  .weather-summary .weather-note { flex-basis: 100%; margin-left: 21px; }
   .bottom-nav { gap: 2px; }
   .bottom-nav .font-size-control { flex: none; }
   .bottom-nav-item { padding-right: 4px; padding-left: 4px; }

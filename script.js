@@ -22,6 +22,8 @@ const icons = {
   trash: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="m6 7 1 14h10l1-14"></path><path d="M9 7V4h6v3"></path></svg>',
   check: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>'
 };
+/* Weather display removed; itinerary data remains local and editable. */
+/*
 const weatherIcons = {
   sun: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="m16.24 7.76 1.42-1.42"></path><path d="M20 12h2"></path><path d="m16.24 16.24 1.42 1.42"></path><path d="M12 20v2"></path><path d="m6.34 17.66-1.42 1.42"></path><path d="M2 12h2"></path><path d="m6.34 6.34-1.42-1.42"></path></svg>',
   cloud: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>',
@@ -29,6 +31,7 @@ const weatherIcons = {
   snow: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2-1 4 1 2 1-2-1-4Z"></path><path d="m12 16-1 2 1 4 1-4-1-2Z"></path><path d="m4.93 4.93 3.02 2.02 2.05-.13-1.1-1.74-3.97-.15Z"></path><path d="m13.99 17.18 2.05-.13 3.02 2.02-3.97-.15-1.1-1.74Z"></path><path d="m2 12 4-1 2 1-2 1-4-1Z"></path><path d="m16 12 2-1 4 1-4 1-2-1Z"></path><path d="m4.93 19.07 3.97-.15 1.1-1.74-2.05-.13-3.02 2.02Z"></path><path d="m13.99 6.82 1.1-1.74 3.97-.15-3.02 2.02-2.05-.13Z"></path></svg>',
   storm: '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path><path d="m13 14-2 4h3l-2 4"></path></svg>'
 };
+*/
 
 // This trip page is intentionally frontend-only for now. It keeps editable
 // itinerary data in localStorage so no Supabase connection is required.
@@ -81,7 +84,6 @@ const days = [
 const dayPicker = document.querySelector("#dayPicker");
 const flightInfo = document.querySelector("#flightInfo");
 const siteHeader = document.querySelector(".site-header");
-const weatherSummary = document.querySelector("#weatherSummary");
 const timeline = document.querySelector("#timeline");
 const toast = document.querySelector("#toast");
 const addItineraryButton = document.querySelector("#addItineraryButton");
@@ -119,7 +121,6 @@ let selectedDay = 0;
 let checklistItemsState = [];
 let checklistGroupNames = [];
 let itineraryOverrides = {};
-const weatherCache = new Map();
 let remoteItems = [];
 let renderedTimelineItems = new Map();
 let editingItem = null;
@@ -649,8 +650,6 @@ function renderDayPicker() {
 function renderDay() {
   const day = days[selectedDay];
   flightInfo.innerHTML = day.flight ? `<article class="flight-card"><div class="flight-card-head"><span class="flight-airline"><strong>${day.flight.airline}</strong><b>·</b><span>${day.flight.code}</span></span></div><div class="flight-route"><div class="flight-endpoint"><strong class="flight-airport">${day.flight.fromCode}</strong><span class="flight-time">${day.flight.depart}</span></div><span class="flight-route-line" aria-hidden="true">${icons.flightPlane}<small>${day.flight.duration}</small></span><div class="flight-endpoint flight-arrival"><strong class="flight-airport">${day.flight.toCode}</strong><span class="flight-time">${day.flight.arrive}</span></div></div><div class="flight-card-foot"><span>${day.flight.dateLabel}</span><span>${day.flight.terminal}</span></div></article>` : "";
-  weatherSummary.innerHTML = `<div class="weather-summary-inner" data-weather="${selectedDay}"><span class="weather-icon">${weatherIcons.cloud}</span><span class="weather-place">${day.weather.label}</span><strong class="weather-temp">載入中</strong><span class="weather-note">正在查詢預報</span></div>`;
-  loadWeather(day, selectedDay);
   const timelineItems = [...fixedItemsForDay(day, selectedDay), ...remoteItemsForDay(day)];
   renderedTimelineItems = new Map(timelineItems.map((item) => [item.editKey, item]));
   timeline.innerHTML = timelineItems.map((item, index) => {
@@ -666,77 +665,6 @@ function renderDay() {
       </div>
     </article>`;
   }).join("");
-}
-
-function weatherDescription(code) {
-  if (code === 0) return "晴朗";
-  if ([1, 2].includes(code)) return "晴時多雲";
-  if (code === 3) return "多雲";
-  if ([45, 48].includes(code)) return "有霧";
-  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "有雨";
-  if ([71, 73, 75, 77, 85, 86].includes(code)) return "降雪";
-  if ([95, 96, 99].includes(code)) return "雷雨";
-  return "天氣資訊";
-}
-
-function weatherIcon(code) {
-  if (code === 0) return weatherIcons.sun;
-  if ([1, 2, 3, 45, 48].includes(code)) return weatherIcons.cloud;
-  if ([71, 73, 75, 77, 85, 86].includes(code)) return weatherIcons.snow;
-  if ([95, 96, 99].includes(code)) return weatherIcons.storm;
-  return weatherIcons.rain;
-}
-
-function setWeatherUnavailable(state) {
-  if (!state) return;
-  state.querySelector(".weather-icon").innerHTML = weatherIcons.cloud;
-  state.querySelector(".weather-temp").textContent = "待發布";
-  state.querySelector(".weather-note").textContent = "出發前 7 天更新";
-}
-
-function applyWeather(state, forecast, date) {
-  if (!state || !forecast?.daily) return;
-  const position = forecast.daily.time.indexOf(date);
-  if (position < 0 || forecast.daily.weather_code?.[position] == null) {
-    setWeatherUnavailable(state);
-    return;
-  }
-  const code = forecast.daily.weather_code[position];
-  const max = Math.round(forecast.daily.temperature_2m_max[position]);
-  const min = Math.round(forecast.daily.temperature_2m_min[position]);
-  const rain = forecast.daily.precipitation_probability_max?.[position];
-  state.querySelector(".weather-icon").innerHTML = weatherIcon(code);
-  state.querySelector(".weather-temp").textContent = `${max}° / ${min}°`;
-  state.querySelector(".weather-note").textContent = `${weatherDescription(code)}${rain == null ? "" : ` · 降雨 ${Math.round(rain)}%`}`;
-}
-
-async function loadWeather(day, dayIndex) {
-  const state = document.querySelector(`[data-weather="${dayIndex}"]`);
-  if (!state) return;
-  const dateParts = day.date.split("/");
-  const date = `2026-${dateParts[0]}-${dateParts[1]}`;
-  const cacheKey = `${day.weather.latitude},${day.weather.longitude}`;
-  if (weatherCache.has(cacheKey)) {
-    applyWeather(state, weatherCache.get(cacheKey), date);
-    return;
-  }
-  const params = new URLSearchParams({
-    latitude: day.weather.latitude,
-    longitude: day.weather.longitude,
-    daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
-    timezone: "Asia/Tokyo",
-    start_date: "2026-11-27",
-    end_date: "2026-12-02"
-  });
-  try {
-    const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);
-    if (!response.ok) throw new Error("Weather forecast unavailable");
-    const forecast = await response.json();
-    weatherCache.set(cacheKey, forecast);
-    applyWeather(state, forecast, date);
-  } catch (error) {
-    setWeatherUnavailable(state);
-  }
 }
 
 function normalizeChecklistRow(row) {
