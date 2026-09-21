@@ -377,3 +377,42 @@ html[data-theme="dark"] .tax-card-blue { color: #efffeb; background: linear-grad
 html[data-theme="dark"] .tax-hero-media figcaption,
 html[data-theme="dark"] .tax-airport-photo figcaption { background: #111811; }
 html[data-theme="dark"] .tax-notice { background: rgba(126,255,63,.08); }
+
+/* Narrow screens: keep enlarged text inside the layout instead of letting
+   grid min-content widths push cards beyond the viewport. */
+html, body { max-width: 100%; overflow-x: hidden; }
+@media (max-width: 780px) {
+  .section-pad,
+  .itinerary-layout,
+  .tax-refund-view,
+  .site-header { min-width: 0; max-width: 100%; }
+  .itinerary-layout { width: 100%; overflow: hidden; }
+  .flight-info,
+  .flight-card,
+  .flight-route,
+  .timeline,
+  .timeline-item,
+  .timeline-card { width: 100%; min-width: 0; max-width: 100%; }
+  .flight-route { grid-template-columns: minmax(0, 1fr) minmax(40px, auto) minmax(0, 1fr); }
+  .flight-route > *,
+  .flight-airline,
+  .flight-card-foot { min-width: 0; }
+  .flight-airline { max-width: 100%; overflow-wrap: anywhere; }
+  .flight-route strong,
+  .flight-route span:not(.flight-route-line),
+  .timeline-card h4,
+  .timeline-card p { overflow-wrap: anywhere; }
+  .flight-card-foot { flex-wrap: wrap; }
+  .timeline-title-row { min-width: 0; }
+  .weather-summary-inner { min-width: 0; flex-wrap: wrap; }
+}
+@media (max-width: 560px) {
+  .site-header { padding-left: 16px; padding-right: 16px; }
+  .itinerary-layout.section-pad { padding-left: 16px; padding-right: 16px; }
+  .site-header .day-picker { gap: 4px; }
+  .weather-summary { min-height: 42px; }
+  .weather-summary .weather-note { flex-basis: 100%; margin-left: 21px; }
+  .bottom-nav { gap: 2px; }
+  .bottom-nav .font-size-control { flex: none; }
+  .bottom-nav-item { padding-right: 4px; padding-left: 4px; }
+}
