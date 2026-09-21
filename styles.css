@@ -54,8 +54,9 @@ h1 em, h2 em, h3 em { color: var(--blue); font-style: italic; }
 .view-panel { display: none; animation: appear .4s ease both; }
 .view-panel.active { display: block; }
 .day-rail { display: block; }
-.site-header .day-picker { gap: 9px; }
-.site-header .day-button { height: 64px; padding: 9px 10px; border: 0; border-radius: 9px; background: rgba(255,255,255,.82); box-shadow: 0 4px 12px rgba(23, 59, 89, .08); }
+.site-header .day-picker { min-height: 82px; gap: 9px; align-items: flex-start; }
+.site-header .day-button { box-sizing: border-box; height: 82px; min-height: 82px; padding: 9px 10px; overflow: hidden; border: 0; border-radius: 9px; background: rgba(255,255,255,.82); box-shadow: 0 4px 12px rgba(23, 59, 89, .08); display: flex; flex-direction: column; justify-content: space-between; }
+.site-header .day-button span, .site-header .day-button strong, .site-header .day-button small { flex: 0 0 auto; line-height: 1; }
 .site-header .day-button strong { margin-top: 6px; color: var(--ink); font-family: var(--body); font-size: calc(21px * var(--font-scale)); font-weight: 700; }
 .site-header .day-button span, .site-header .day-button strong, .site-header .day-button small { text-align: center; }
 .site-header .day-button small { display: block; margin-top: 1px; color: var(--muted); font-size: calc(9px * var(--font-scale)); font-weight: 700; letter-spacing: .08em; }
@@ -386,6 +387,32 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .itinerary-layout,
   .tax-refund-view,
   .site-header { min-width: 0; max-width: 100%; }
+  .site-header .day-picker {
+    min-height: 82px;
+    align-items: flex-start;
+  }
+  .site-header .day-button {
+    box-sizing: border-box;
+    height: 82px;
+    min-height: 82px;
+    overflow: hidden;
+  }
+  .site-header .day-button span,
+  .site-header .day-button strong,
+  .site-header .day-button small {
+    flex: 0 0 auto;
+    line-height: 1;
+  }
+  .weather-summary {
+    min-height: 48px;
+  }
+  .weather-summary-inner {
+    align-items: flex-start;
+  }
+  .weather-summary .weather-note {
+    flex-basis: 100%;
+    margin-left: 21px;
+  }
   .itinerary-layout { width: 100%; overflow: hidden; }
   .flight-info,
   .flight-card,
