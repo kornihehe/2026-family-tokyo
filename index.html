@@ -45,13 +45,6 @@
       <div class="weather-summary" id="weatherSummary" aria-live="polite"></div>
     </header>
 
-    <div class="font-size-control" role="group" aria-label="調整字體大小">
-      <span class="font-size-label">字體</span>
-      <button id="fontSizeDecrease" type="button" aria-label="縮小字體" title="縮小字體">A−</button>
-      <button id="fontSizeReset" type="button" aria-label="恢復標準字體" title="恢復標準字體">標準</button>
-      <button id="fontSizeIncrease" type="button" aria-label="放大字體" title="放大字體">A＋</button>
-    </div>
-
     <main id="top">
       <section class="view-panel active" id="itineraryView" data-panel="itinerary">
         <div class="itinerary-layout section-pad">
@@ -318,6 +311,12 @@
     </dialog>
 
     <nav class="bottom-nav" aria-label="主要導覽">
+      <div class="font-size-control" role="group" aria-label="調整字體大小">
+        <span class="font-size-label">字體</span>
+        <button id="fontSizeDecrease" type="button" aria-label="縮小字體" title="縮小字體">A−</button>
+        <button id="fontSizeReset" type="button" aria-label="恢復標準字體" title="恢復標準字體">標準</button>
+        <button id="fontSizeIncrease" type="button" aria-label="放大字體" title="放大字體">A＋</button>
+      </div>
       <button class="bottom-nav-item active" data-view="itinerary" type="button"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>行程</button>
       <button class="bottom-nav-item" data-view="tax-refund" type="button"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M7 9h10"></path><path d="M7 13h4"></path><path d="M15 13h2"></path></svg>退稅</button>
     </nav>
